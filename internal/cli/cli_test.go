@@ -73,6 +73,8 @@ type harness struct {
 	// between watch sweeps.
 	ctx  context.Context
 	wait func(time.Duration)
+	// hooks records the --on-change commands lmw ran, with their variables.
+	hooks [][]string
 }
 
 func newHarness(t *testing.T) *harness {
@@ -115,6 +117,10 @@ func (h *harness) run(stdin string, args ...string) (int, string, string) {
 		},
 	}
 	a.wait = h.wait
+	a.runHook = func(_ context.Context, command string, env []string) error {
+		h.hooks = append(h.hooks, append([]string{command}, env...))
+		return nil
+	}
 	ctx := h.ctx
 	if ctx == nil {
 		ctx = context.Background()
@@ -834,5 +840,45 @@ func TestUnreadWatchKeepsToItsBudget(t *testing.T) {
 	}
 	if n := len(h.linkedin.requests) - before; n != 0 {
 		t.Errorf("%d requests before refusing", n)
+	}
+}
+
+func TestUnreadWatchRunsTheCommandWhenSomethingArrives(t *testing.T) {
+	h := newHarness(t)
+	h.importPasted()
+	badges := func(messages int) reply {
+		return reply{status: 200, body: fmt.Sprintf(`{"data":{"elements":[{"count":2,"badgingItem":"NOTIFICATIONS"},{"count":%d,"badgingItem":"MESSAGING"}]},"included":[]}`, messages)}
+	}
+	h.linkedin.replies["/voyagerNotificationsDashBadgingItemCounts"] = badges(1)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	sweeps := 0
+	h.ctx = ctx
+	h.wait = func(time.Duration) {
+		sweeps++
+		switch sweeps {
+		case 1: // the first sweep runs nothing: there is nothing to compare
+			h.linkedin.replies["/voyagerNotificationsDashBadgingItemCounts"] = badges(0)
+		case 2: // fewer unread runs nothing either
+			h.linkedin.replies["/voyagerNotificationsDashBadgingItemCounts"] = badges(3)
+		case 3:
+			cancel()
+		}
+	}
+	if code, out, errOut := h.run("", "unread", "--watch", "10m", "--on-change", "notify me"); code != 0 {
+		t.Fatalf("exit %d\n%s\n%s", code, out, errOut)
+	}
+	if len(h.hooks) != 1 {
+		t.Fatalf("hooks %q", h.hooks)
+	}
+	hook := strings.Join(h.hooks[0], "\n")
+	for _, want := range []string{"notify me", "LMW_MESSAGES=3", "LMW_NEW_MESSAGES=3", "LMW_NEW_NOTIFICATIONS=0", `LMW_UNREAD={"notifications":2,"messages":3,"network":0}`} {
+		if !strings.Contains(hook, want) {
+			t.Errorf("hook lacks %s:\n%s", want, hook)
+		}
+	}
+	h.ctx = nil
+	if code, _, errOut := h.run("", "unread", "--on-change", "notify me"); code == 0 || !strings.Contains(errOut, "--on-change needs --watch") {
+		t.Errorf("--on-change without --watch: exit %d, %s", code, errOut)
 	}
 }

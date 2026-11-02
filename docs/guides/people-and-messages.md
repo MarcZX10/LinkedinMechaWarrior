@@ -147,6 +147,18 @@ with `--folders`). It stops at the first error, so if LinkedIn pushes back
 the watch ends instead of insisting. With `--json` each change is one line
 of JSON.
 
+`--on-change` runs a command of yours in your shell when a count goes up,
+for example a desktop notification:
+
+```bash
+lmw unread --watch 15m --on-change 'notify-send LinkedIn "$LMW_NEW_MESSAGES new messages"'
+```
+
+The command gets the counts in `LMW_NOTIFICATIONS`, `LMW_MESSAGES` and
+`LMW_NETWORK`, what went up in `LMW_NEW_NOTIFICATIONS`, `LMW_NEW_MESSAGES`
+and `LMW_NEW_NETWORK`, and all of it as JSON in `LMW_UNREAD`. Its output goes
+to stderr. If it fails, `lmw` says so and keeps watching.
+
 ## Notifications
 
 ```bash

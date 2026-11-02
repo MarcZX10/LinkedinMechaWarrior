@@ -4,7 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+	"os/exec"
 	"reflect"
+	"runtime"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -241,16 +244,20 @@ const watchBudget = 12
 func (a *app) unreadCommand() *cobra.Command {
 	var folders bool
 	var every time.Duration
+	var onChange string
 	cmd := &cobra.Command{
 		Use:   "unread",
 		Short: "Count unread notifications, messages and invitations",
 		Long: "Count what waits for you, as the badges of LinkedIn's top bar show it (one request).\n" +
 			"With --folders, also count unread conversations in each message folder (two more requests).",
-		Example: "  lmw unread\n  lmw unread --folders\n  lmw unread --watch 10m",
+		Example: "  lmw unread\n  lmw unread --folders\n  lmw unread --watch 10m\n  lmw unread --watch 15m --on-change 'notify-send LinkedIn \"$LMW_NEW_MESSAGES new messages\"'",
 		Args:    exactArgs(0, "no arguments"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
+			if onChange != "" && every == 0 {
+				return errs.New(errs.Usage, "--on-change needs --watch: lmw unread --watch 15m --on-change COMMAND")
+			}
 			if every != 0 {
-				return a.watchUnread(cmd.Context(), every, folders)
+				return a.watchUnread(cmd.Context(), every, folders, onChange)
 			}
 			unread, err := fetch(a, func(c *voyager.Client) (api.Unread, error) {
 				return api.UnreadCounts(cmd.Context(), c, folders)
@@ -267,13 +274,14 @@ func (a *app) unreadCommand() *cobra.Command {
 	}
 	cmd.Flags().BoolVar(&folders, "folders", false, "also count unread conversations by message folder")
 	cmd.Flags().DurationVar(&every, "watch", 0, "keep counting every DURATION (10m, 1h) and print a line when something changes; Ctrl-C stops")
+	cmd.Flags().StringVar(&onChange, "on-change", "", "with --watch, run COMMAND in your shell when a count goes up (counts in LMW_* variables)")
 	return cmd
 }
 
 // watchUnread counts unread items every so often until interrupted, and
 // prints the counts when they change. It stops at the first error, so a
 // pushback from LinkedIn ends the watch instead of insisting.
-func (a *app) watchUnread(ctx context.Context, every time.Duration, folders bool) error {
+func (a *app) watchUnread(ctx context.Context, every time.Duration, folders bool, onChange string) error {
 	perSweep := 1
 	if folders {
 		perSweep = 3
@@ -296,11 +304,59 @@ func (a *app) watchUnread(ctx context.Context, every time.Duration, folders bool
 			if err := a.printSweep(unread, last); err != nil {
 				return err
 			}
+			if onChange != "" && last != nil && wentUp(*last, unread) {
+				if err := a.hook(ctx, onChange, hookEnv(*last, unread)); err != nil && ctx.Err() == nil {
+					fmt.Fprintf(a.stderr, "lmw: the --on-change command failed: %v\n", err)
+				}
+			}
 			last = &unread
 		}
 		a.wait(every)
 	}
 	return nil
+}
+
+// wentUp reports whether any count of now is higher than before.
+func wentUp(before, now api.Unread) bool {
+	if now.Notifications > before.Notifications || now.Messages > before.Messages || now.Network > before.Network {
+		return true
+	}
+	for name, n := range now.Folders {
+		if n > before.Folders[name] {
+			return true
+		}
+	}
+	return false
+}
+
+// hookEnv tells an --on-change command the counts, what went up, and all
+// of it as JSON.
+func hookEnv(before, now api.Unread) []string {
+	counts, _ := json.Marshal(now)
+	return []string{
+		fmt.Sprintf("LMW_NOTIFICATIONS=%d", now.Notifications),
+		fmt.Sprintf("LMW_MESSAGES=%d", now.Messages),
+		fmt.Sprintf("LMW_NETWORK=%d", now.Network),
+		fmt.Sprintf("LMW_NEW_NOTIFICATIONS=%d", max(0, now.Notifications-before.Notifications)),
+		fmt.Sprintf("LMW_NEW_MESSAGES=%d", max(0, now.Messages-before.Messages)),
+		fmt.Sprintf("LMW_NEW_NETWORK=%d", max(0, now.Network-before.Network)),
+		"LMW_UNREAD=" + string(counts),
+	}
+}
+
+// hook runs a command of the person's in their shell, with env added to
+// lmw's environment. Its output goes to stderr, so stdout keeps only lmw's.
+func (a *app) hook(ctx context.Context, command string, env []string) error {
+	if a.runHook != nil {
+		return a.runHook(ctx, command, env)
+	}
+	cmd := exec.CommandContext(ctx, "sh", "-c", command)
+	if runtime.GOOS == "windows" {
+		cmd = exec.CommandContext(ctx, "cmd", "/C", command)
+	}
+	cmd.Env = append(os.Environ(), env...)
+	cmd.Stdout, cmd.Stderr = a.stderr, a.stderr
+	return cmd.Run()
 }
 
 // printSweep prints one radar sweep: the time, the counts and what went up.

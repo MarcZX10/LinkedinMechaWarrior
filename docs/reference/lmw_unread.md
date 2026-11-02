@@ -19,14 +19,16 @@ lmw unread [flags]
   lmw unread
   lmw unread --folders
   lmw unread --watch 10m
+  lmw unread --watch 15m --on-change 'notify-send LinkedIn "$LMW_NEW_MESSAGES new messages"'
 ```
 
 ### Options
 
 ```
-      --folders          also count unread conversations by message folder
-  -h, --help             help for unread
-      --watch duration   keep counting every DURATION (10m, 1h) and print a line when something changes; Ctrl-C stops
+      --folders            also count unread conversations by message folder
+  -h, --help               help for unread
+      --on-change string   with --watch, run COMMAND in your shell when a count goes up (counts in LMW_* variables)
+      --watch duration     keep counting every DURATION (10m, 1h) and print a line when something changes; Ctrl-C stops
 ```
 
 ### Options inherited from parent commands

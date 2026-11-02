@@ -48,6 +48,8 @@ type app struct {
 	harPlaces func() []har.Place
 	// wait pauses between the sweeps of `unread --watch`.
 	wait func(time.Duration)
+	// runHook, when set, replaces running --on-change commands in a shell.
+	runHook func(ctx context.Context, command string, env []string) error
 }
 
 // Main runs lmw with the process arguments and returns the exit code.
