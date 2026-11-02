@@ -47,6 +47,14 @@ func Search(ctx context.Context, c Client, kind, keywords string, opts SearchOpt
 		return nil, errs.New(errs.Usage, "cannot search %q; use people, companies, schools or groups", kind)
 	}
 	keywords = strings.Join(strings.Fields(keywords), " ")
+	if kind == "people" && keywords != "" {
+		if types := typeaheadTypes(opts.Network); types != nil {
+			results, err := searchPeopleByName(ctx, c, keywords, types, limit)
+			if !endpointGone(err) && !IsStale(err) {
+				return results, err
+			}
+		}
+	}
 	parameters := []string{"(key:resultType,value:List(" + resultType + "))"}
 	if len(opts.Network) > 0 {
 		if kind != "people" {
@@ -82,6 +90,18 @@ func Search(ctx context.Context, c Client, kind, keywords string, opts SearchOpt
 		found, n := ParseSearch(raw)
 		return found, pageEnd(nil, start, n, ListPageSize), nil
 	})
+}
+
+// typeaheadTypes picks the typeahead matches for a network filter, or nil
+// when the typeahead cannot express it (2nd and 3rd degree).
+func typeaheadTypes(network []string) []string {
+	if len(network) == 0 {
+		return []string{"CONNECTIONS", "PEOPLE", "COWORKERS"}
+	}
+	if len(network) == 1 && network[0] == "1st" {
+		return []string{"CONNECTIONS"}
+	}
+	return nil
 }
 
 // ParseSearch reads one page of search results and how many items it had.
@@ -137,4 +157,84 @@ func listOfObjects(value any) []normalized.Object {
 		}
 	}
 	return out
+}
+
+// peopleTypeaheadQuery is the person lookup of the message composer. Since
+// autumn 2026 the search box query answers name searches with no results,
+// while this one still finds people by name (verified live on 2026-11-02).
+// It returns up to about ten people, without paging.
+var peopleTypeaheadQuery = Query{
+	Name: "voyagerMessagingDashMessagingTypeahead", Vars: []string{"keyword", "types"},
+	Hashes: []string{"7f566173ac0c94b510b3dc2b2a6763d4"},
+}
+
+// searchPeopleByName finds people through the composer's typeahead. types
+// are its kinds of match: CONNECTIONS, PEOPLE, COWORKERS.
+func searchPeopleByName(ctx context.Context, c Client, keywords string, types []string, limit int) ([]SearchResult, error) {
+	raw, err := peopleTypeaheadQuery.Get(ctx, c, "(keyword:"+restliValue(keywords)+",types:List("+strings.Join(types, ",")+"))")
+	if err != nil {
+		return nil, err
+	}
+	results := ParseTypeahead(raw)
+	if len(results) > limit {
+		results = results[:limit]
+	}
+	return results, nil
+}
+
+// ParseTypeahead reads the people of a typeahead answer, in its order.
+func ParseTypeahead(raw []byte) []SearchResult {
+	doc := normalized.Parse(raw)
+	var people []normalized.Object
+	items, _, _ := collection(doc)
+	for _, item := range items {
+		if person := profileIn(doc, item); person != nil {
+			people = append(people, person)
+		}
+	}
+	if len(people) == 0 {
+		people = doc.OfType(".Profile")
+	}
+	var out []SearchResult
+	seen := map[string]bool{}
+	for _, p := range people {
+		name, headline, url, urn := personSummary(p)
+		if name == "" || seen[urn] {
+			continue
+		}
+		seen[urn] = true
+		if url == "" {
+			if id := memberIDFromURN(urn); id != "" {
+				url = "https://www.linkedin.com/in/" + id + "/"
+			}
+		}
+		out = append(out, SearchResult{Name: name, Subtitle: headline, URL: url, URN: urn})
+	}
+	return out
+}
+
+// profileIn finds the profile a typeahead element is about: the element
+// itself, or a profile it references, directly or one object down.
+func profileIn(doc *normalized.Doc, item normalized.Object) normalized.Object {
+	isProfile := func(e normalized.Object) bool {
+		return e != nil && strings.HasSuffix(normalized.String(e["$type"]), ".Profile") && normalized.String(e["firstName"]) != ""
+	}
+	if isProfile(item) {
+		return item
+	}
+	for key, value := range item {
+		switch v := value.(type) {
+		case string:
+			if strings.HasPrefix(key, "*") && isProfile(doc.Get(v)) {
+				return doc.Get(v)
+			}
+		case normalized.Object:
+			for innerKey, inner := range v {
+				if s, ok := inner.(string); ok && strings.HasPrefix(innerKey, "*") && isProfile(doc.Get(s)) {
+					return doc.Get(s)
+				}
+			}
+		}
+	}
+	return nil
 }

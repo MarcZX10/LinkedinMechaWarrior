@@ -656,7 +656,7 @@ func TestSearchCompanyAndJobs(t *testing.T) {
 	h.importPasted()
 	h.linkedin.replies["/graphql"] = reply{status: 200, body: `{"data":{"data":{"searchDashClustersByAll":{"elements":[{"items":[{"item":{"*entityResult":"urn:li:r:1"}}]}]}}},"included":[` +
 		`{"entityUrn":"urn:li:r:1","title":{"text":"Grace Hopper"},"primarySubtitle":{"text":"Admiral"},"navigationUrl":"https://www.linkedin.com/in/grace?x=1"}]}`}
-	if out := h.mustRun("", "search", "people", "grace", "--network", "1st"); !strings.Contains(out, "Grace Hopper") || !strings.Contains(out, "https://www.linkedin.com/in/grace\n") {
+	if out := h.mustRun("", "search", "people", "grace", "--network", "2nd"); !strings.Contains(out, "Grace Hopper") || !strings.Contains(out, "https://www.linkedin.com/in/grace\n") {
 		t.Errorf("search: %s", out)
 	}
 	if code, _, _ := h.run("", "search", "posts", "go"); code != 2 {

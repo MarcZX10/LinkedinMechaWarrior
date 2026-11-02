@@ -119,7 +119,8 @@ func TestDoctorProbeReadsEveryFeatureAndStopsOnPushback(t *testing.T) {
 	}
 	// Search (and saved posts, the same query) find the person themself.
 	h.linkedin.replies["/graphql"] = reply{status: 200, body: `{"data":{"data":{"searchDashClustersByAll":{"elements":[{"items":[{"item":{"*entityResult":"urn:li:r:1"}}]}]}}},"included":[` +
-		`{"entityUrn":"urn:li:r:1","title":{"text":"Ada Lovelace"}}]}`}
+		`{"entityUrn":"urn:li:r:1","title":{"text":"Ada Lovelace"}},` +
+		`{"$type":"com.linkedin.voyager.dash.identity.profile.Profile","entityUrn":"urn:li:fsd_profile:ACoAAB","firstName":"Ada","lastName":"Lovelace"}]}`}
 	h.linkedin.replies["/identity/dash/profiles"] = reply{status: 200, body: dashProfileJSON}
 	h.linkedin.replies["/organization/companies"] = reply{status: 200, body: `{"data":{"*elements":["urn:li:fs_normalized_company:1"]},"included":[` +
 		`{"$type":"com.linkedin.voyager.organization.Company","entityUrn":"urn:li:fs_normalized_company:1","name":"LinkedIn","universalName":"linkedin"}]}`}

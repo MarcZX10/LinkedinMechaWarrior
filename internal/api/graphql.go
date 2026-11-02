@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"errors"
 	"net/url"
 	"sort"
 	"strings"
@@ -144,9 +145,20 @@ func (q Query) Execute(ctx context.Context, c Client, variables map[string]any) 
 	return nil, q.stale(lastErr)
 }
 
+// staleQuery marks errors about a query whose known versions all failed.
+type staleQuery struct{ error }
+
+func (s staleQuery) Unwrap() error { return s.error }
+
 func (q Query) stale(err error) error {
-	return errs.Wrap(errs.API, err, "LinkedIn no longer accepts the versions of its %s query that lmw knows (%v). "+
+	return errs.Wrap(errs.API, staleQuery{err}, "LinkedIn no longer accepts the versions of its %s query that lmw knows (%v). "+
 		"Record a HAR while the matching LinkedIn page loads, then run `lmw har learn FILE`", q.Name, err)
+}
+
+// IsStale reports whether err says every known version of a query failed.
+func IsStale(err error) bool {
+	var s staleQuery
+	return errors.As(err, &s)
 }
 
 // Rest.li structure characters inside values must be percent-encoded, or
