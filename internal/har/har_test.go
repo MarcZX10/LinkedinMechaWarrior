@@ -152,3 +152,45 @@ func TestIdentityRejectsBrowsersWithoutAFingerprint(t *testing.T) {
 		t.Errorf("expected a Safari identity to be rejected, got %v", err)
 	}
 }
+
+func TestQueriesListsGraphQLQueriesOnce(t *testing.T) {
+	entry := func(method, url, body string, status int) map[string]any {
+		e := map[string]any{
+			"request":  map[string]any{"method": method, "url": url, "headers": []any{}},
+			"response": map[string]any{"status": status, "content": map[string]any{"text": "{}"}},
+		}
+		if body != "" {
+			e["request"].(map[string]any)["postData"] = map[string]any{"mimeType": "application/json", "text": body}
+		}
+		return e
+	}
+	file := writeHAR(t,
+		entry("GET", "https://www.linkedin.com/voyager/api/graphql?includeWebMetadata=true&variables=(count:10,start:0,threadUrn:urn%3Ali%3Aactivity%3A1)&queryId=voyagerSocialDashReactions.old", "", 200),
+		entry("GET", "https://www.linkedin.com/voyager/api/graphql?includeWebMetadata=true&variables=(count:10,start:10,threadUrn:urn%3Ali%3Aactivity%3A1)&queryId=voyagerSocialDashReactions.new", "", 200),
+		entry("POST", "https://www.linkedin.com/voyager/api/graphql?action=execute&queryId=voyagerSocialDashReactions.react",
+			`{"variables":{"entity":{"reactionType":"LIKE"},"threadUrn":"urn:li:activity:1"},"queryId":"voyagerSocialDashReactions.react"}`, 200),
+		entry("GET", "https://www.linkedin.com/voyager/api/voyagerMessagingGraphQL/graphql?queryId=messengerConversations.abc&variables=(query:(predicateUnions:List((conversationCategoryPredicate:(category:PRIMARY_INBOX)))),count:20,mailboxUrn:urn%3Ali%3Afsd_profile%3AACo)", "", 200),
+		entry("GET", "https://www.linkedin.com/voyager/api/graphql?variables=(a:1)&queryId=broken.hash", "", 400),
+	)
+	f, err := Load(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := map[string]string{}
+	for _, q := range f.Queries() {
+		got[q.Name+"("+strings.Join(q.Variables, ",")+")"] = q.Hash
+	}
+	want := map[string]string{
+		"voyagerSocialDashReactions(count,start,threadUrn)": "new",
+		"voyagerSocialDashReactions(entity,threadUrn)":      "react",
+		"messengerConversations(count,mailboxUrn,query)":    "abc",
+	}
+	if len(got) != len(want) {
+		t.Errorf("queries %v", got)
+	}
+	for key, hash := range want {
+		if got[key] != hash {
+			t.Errorf("%s: got hash %q, want %q (all: %v)", key, got[key], hash, got)
+		}
+	}
+}

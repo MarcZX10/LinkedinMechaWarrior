@@ -562,3 +562,27 @@ func TestInvitationsAndConnections(t *testing.T) {
 		t.Errorf("a long note should fail, exit %d", code)
 	}
 }
+
+func TestHARLearnSavesQueriesThatLaterRequestsUse(t *testing.T) {
+	h := newHarness(t)
+	h.importPasted()
+	harFile := filepath.Join(t.TempDir(), "linkedin.har")
+	raw, _ := json.Marshal(map[string]any{"log": map[string]any{"entries": []any{map[string]any{
+		"request": map[string]any{
+			"method":  "GET",
+			"url":     "https://www.linkedin.com/voyager/api/graphql?includeWebMetadata=true&variables=(count:10,start:0,profileUrn:urn%3Ali%3Afsd_profile%3AACo)&queryId=voyagerFeedDashProfileUpdates.fresh123",
+			"headers": []any{},
+		},
+		"response": map[string]any{"status": 200, "content": map[string]any{"text": "{}"}},
+	}}}})
+	_ = os.WriteFile(harFile, raw, 0o600)
+
+	if out := h.mustRun("", "har", "learn", harFile); !strings.Contains(out, "voyagerFeedDashProfileUpdates(count, profileUrn, start) fresh123") {
+		t.Errorf("har learn: %s", out)
+	}
+	h.linkedin.replies["/graphql"] = reply{status: 200, body: feedJSON}
+	h.mustRun("", "profile", "posts", "ACoAABcdEfGh123456789012345", "-n", "1")
+	if q := h.linkedin.requests[len(h.linkedin.requests)-1].URL.Query().Get("queryId"); q != "voyagerFeedDashProfileUpdates.fresh123" {
+		t.Errorf("the learned version was not tried first: %s", q)
+	}
+}

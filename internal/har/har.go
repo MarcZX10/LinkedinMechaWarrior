@@ -276,3 +276,102 @@ func (c Call) String() string {
 	}
 	return line
 }
+
+// QueryUse is a GraphQL query the web app ran: the queryId name and hash,
+// and the names of the variables it sent.
+type QueryUse struct {
+	Name      string
+	Hash      string
+	Variables []string
+}
+
+// Queries lists the GraphQL queries in the file, most recent first, each
+// name and set of variables once.
+func (f *File) Queries() []QueryUse {
+	var uses []QueryUse
+	seen := map[string]bool{}
+	for i := len(f.Entries) - 1; i >= 0; i-- {
+		entry := f.Entries[i]
+		if !isVoyager(entry) || entry.Response.Status >= 400 {
+			continue
+		}
+		u, err := url.Parse(entry.Request.URL)
+		if err != nil {
+			continue
+		}
+		name, hash, ok := strings.Cut(u.Query().Get("queryId"), ".")
+		if !ok || name == "" || hash == "" {
+			continue
+		}
+		var variables []string
+		if entry.Request.Method == "POST" && entry.Request.PostData != nil {
+			var body struct {
+				Variables map[string]any `json:"variables"`
+			}
+			if json.Unmarshal([]byte(entry.Request.PostData.Text), &body) == nil {
+				for key := range body.Variables {
+					variables = append(variables, key)
+				}
+			}
+		} else {
+			variables = restliKeys(rawQueryValue(u.RawQuery, "variables"))
+		}
+		sort.Strings(variables)
+		key := name + "(" + strings.Join(variables, ",") + ")"
+		if seen[key] {
+			continue
+		}
+		seen[key] = true
+		uses = append(uses, QueryUse{Name: name, Hash: hash, Variables: variables})
+	}
+	return uses
+}
+
+// rawQueryValue returns a query parameter decoded once, without the "+" as
+// space rule that would corrupt Rest.li values.
+func rawQueryValue(rawQuery, key string) string {
+	for _, part := range strings.Split(rawQuery, "&") {
+		if k, v, ok := strings.Cut(part, "="); ok && k == key {
+			if decoded, err := url.PathUnescape(v); err == nil {
+				return decoded
+			}
+			return v
+		}
+	}
+	return ""
+}
+
+// restliKeys returns the top-level keys of a Rest.li record such as
+// "(count:10,query:(keywords:x),start:0)".
+func restliKeys(record string) []string {
+	record = strings.TrimSpace(record)
+	if !strings.HasPrefix(record, "(") || !strings.HasSuffix(record, ")") {
+		return nil
+	}
+	record = record[1 : len(record)-1]
+	var keys []string
+	depth, start := 0, 0
+	for i := 0; i <= len(record); i++ {
+		if i < len(record) {
+			switch record[i] {
+			case '(':
+				depth++
+				continue
+			case ')':
+				depth--
+				continue
+			case ',':
+				if depth > 0 {
+					continue
+				}
+			default:
+				continue
+			}
+		}
+		if key, _, ok := strings.Cut(record[start:i], ":"); ok && key != "" {
+			keys = append(keys, strings.TrimSpace(key))
+		}
+		start = i + 1
+	}
+	return keys
+}

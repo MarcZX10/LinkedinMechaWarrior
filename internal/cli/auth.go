@@ -3,6 +3,7 @@ package cli
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -121,6 +122,11 @@ func (a *app) collectCookies(cmd *cobra.Command, browser, harFile string) (map[s
 				return nil, "", errs.Wrap(errs.Storage, err, "cannot save the browser identity: %v", err)
 			}
 			a.printf("Browser identity copied from the HAR file: %s\n", id.UserAgent)
+		}
+		if learned, err := a.learnQueries(file); err != nil {
+			slog.Warn("could not learn the GraphQL queries of the HAR file", "error", err)
+		} else if len(learned) > 0 {
+			a.printf("Learned %d GraphQL query versions from the HAR file.\n", len(learned))
 		}
 		return cookies, "HAR file", nil
 

@@ -135,7 +135,7 @@ The file contains private data such as messages; don't share it as-is.`,
 	}
 	inspect.Flags().StringVar(&filter, "filter", "", "only calls whose URL contains this text")
 	inspect.Flags().IntVar(&show, "show", -1, "print the request and response of the entry with this index")
-	cmd.AddCommand(inspect)
+	cmd.AddCommand(inspect, a.harLearnCommand())
 	return cmd
 }
 

@@ -16,6 +16,7 @@ import (
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
 
+	"github.com/MarcZX100/LinkedinMechaWarrior/internal/api"
 	"github.com/MarcZX100/LinkedinMechaWarrior/internal/auth"
 	"github.com/MarcZX100/LinkedinMechaWarrior/internal/config"
 	"github.com/MarcZX100/LinkedinMechaWarrior/internal/errs"
@@ -142,6 +143,11 @@ func (a *app) rootCommand() *cobra.Command {
 			if err := cfg.EnsureStateDir(); err != nil {
 				return errs.Wrap(errs.Storage, err, "cannot create %s: %v", cfg.StateDir, err)
 			}
+			queries, err := loadLearnedQueries(cfg.QueriesFile())
+			if err != nil {
+				slog.Warn("ignoring the learned GraphQL queries", "error", err)
+			}
+			api.SetLearnedQueries(queries)
 			return nil
 		},
 	}

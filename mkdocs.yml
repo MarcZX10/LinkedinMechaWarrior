@@ -123,6 +123,7 @@ nav:
           - reference/lmw_api_get.md
           - reference/lmw_har.md
           - reference/lmw_har_inspect.md
+          - reference/lmw_har_learn.md
           - reference/lmw_identity.md
           - reference/lmw_identity_show.md
           - reference/lmw_identity_import.md

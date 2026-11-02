@@ -33,6 +33,9 @@ func (c Config) SessionFile() string { return filepath.Join(c.StateDir, "session
 // IdentityFile stores the browser identity imported from a HAR file.
 func (c Config) IdentityFile() string { return filepath.Join(c.StateDir, "identity.json") }
 
+// QueriesFile stores the GraphQL query versions learned from HAR files.
+func (c Config) QueriesFile() string { return filepath.Join(c.StateDir, "graphql-queries.json") }
+
 // Load reads the configuration from the environment and validates it.
 func Load() (Config, error) {
 	return FromEnv(os.Getenv)
