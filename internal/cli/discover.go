@@ -182,7 +182,7 @@ func (a *app) jobsCommand() *cobra.Command {
 		},
 	}
 	show.Flags().BoolVar(&full, "full", false, "show the complete description")
-	cmd.AddCommand(searchCmd, show)
+	cmd.AddCommand(searchCmd, show, a.jobsTrackedCommand())
 	return cmd
 }
 

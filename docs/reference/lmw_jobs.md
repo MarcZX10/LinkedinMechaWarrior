@@ -22,4 +22,5 @@ Search job postings and read them
 * [lmw](lmw.md)	 - A command-line client for LinkedIn
 * [lmw jobs search](lmw_jobs_search.md)	 - Search job postings
 * [lmw jobs show](lmw_jobs_show.md)	 - Show a job posting
+* [lmw jobs tracked](lmw_jobs_tracked.md)	 - Show the jobs in your job tracker: saved, applied...
 

@@ -86,6 +86,28 @@ func Search(ctx context.Context, c Client, kind, keywords string, opts SearchOpt
 
 // ParseSearch reads one page of search results and how many items it had.
 func ParseSearch(raw []byte) ([]SearchResult, int) {
+	rows, items := searchRows(raw)
+	var out []SearchResult
+	for _, r := range rows {
+		name := normalized.Text(r["title"])
+		if name == "" || strings.EqualFold(name, "LinkedIn Member") {
+			continue
+		}
+		out = append(out, SearchResult{
+			Name:     name,
+			Subtitle: normalized.Text(r["primarySubtitle"]),
+			Location: normalized.Text(r["secondarySubtitle"]),
+			Summary:  normalized.Text(r["summary"]),
+			URL:      cleanURL(normalized.String(r["navigationUrl"])),
+			URN:      firstNonEmpty(normalized.String(r["trackingUrn"]), normalized.String(r["entityUrn"])),
+		})
+	}
+	return out, items
+}
+
+// searchRows returns the result rows of a search page, in order, and how many
+// items the page had.
+func searchRows(raw []byte) ([]normalized.Object, int) {
 	doc := normalized.Parse(raw)
 	var results []normalized.Object
 	items := 0
@@ -103,22 +125,7 @@ func ParseSearch(raw []byte) ([]SearchResult, int) {
 		results = doc.OfType("EntityResultViewModel")
 		items = len(results)
 	}
-	var out []SearchResult
-	for _, r := range results {
-		name := normalized.Text(r["title"])
-		if name == "" || strings.EqualFold(name, "LinkedIn Member") {
-			continue
-		}
-		out = append(out, SearchResult{
-			Name:     name,
-			Subtitle: normalized.Text(r["primarySubtitle"]),
-			Location: normalized.Text(r["secondarySubtitle"]),
-			Summary:  normalized.Text(r["summary"]),
-			URL:      cleanURL(normalized.String(r["navigationUrl"])),
-			URN:      firstNonEmpty(normalized.String(r["trackingUrn"]), normalized.String(r["entityUrn"])),
-		})
-	}
-	return out, items
+	return results, items
 }
 
 func listOfObjects(value any) []normalized.Object {

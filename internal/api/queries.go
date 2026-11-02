@@ -46,5 +46,5 @@ var (
 // Queries lists the GraphQL queries lmw uses.
 func Queries() []Query {
 	return []Query{profileUpdatesQuery, updateQuery, commentsQuery, reactionsQuery, reactQuery, unreactQuery,
-		searchQuery, conversationsQuery, messagesQuery}
+		searchQuery, savedItemsQuery, conversationsQuery, messagesQuery, pollQuery, urlPreviewQuery}
 }

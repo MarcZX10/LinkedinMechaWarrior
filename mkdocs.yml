@@ -167,6 +167,8 @@ nav:
           - reference/lmw_jobs.md
           - reference/lmw_jobs_search.md
           - reference/lmw_jobs_show.md
+          - reference/lmw_jobs_tracked.md
+          - reference/lmw_saved.md
           - reference/lmw_limits.md
           - reference/lmw_mcp.md
           - reference/lmw_api.md

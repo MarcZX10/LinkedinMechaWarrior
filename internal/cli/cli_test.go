@@ -699,12 +699,31 @@ func TestMCPOffersEveryFeature(t *testing.T) {
 	for _, want := range []string{
 		"get_my_profile", "get_feed", "get_profile", "get_profile_posts", "get_contact_info", "get_post", "get_post_comments",
 		"get_post_reactions", "list_conversations", "get_conversation", "get_notifications", "list_invitations", "list_connections",
-		"search", "get_company", "search_jobs", "get_job", "get_request_budget", "linkedin_api_get",
+		"search", "get_company", "search_jobs", "get_job", "get_saved_posts", "get_tracked_jobs", "get_request_budget", "linkedin_api_get",
 		"publish_post", "edit_post", "comment_on_post", "reply_to_comment", "react_to_post", "remove_reaction", "delete_post", "send_message", "mark_conversation_read",
 		"answer_invitation", "withdraw_invitation", "send_connection_request", "remove_connection", "set_following",
 	} {
 		if !names[want] {
 			t.Errorf("tool %s is missing", want)
 		}
+	}
+}
+
+func TestSavedPostsAndTrackedJobs(t *testing.T) {
+	h := newHarness(t)
+	h.importPasted()
+	h.linkedin.replies["/graphql"] = reply{status: 200, body: `{"data":{"data":{"searchDashClustersByAll":{"elements":[{"items":[{"item":{"*entityResult":"urn:li:r:1"}}]}]}}},"included":[` +
+		`{"entityUrn":"urn:li:r:1","trackingUrn":"urn:li:fsd_entityResultViewModel:(urn:li:activity:42,SEARCH_MY_ITEMS_SAVED_POSTS,DEFAULT)","title":{"text":"Grace Hopper"},"summary":{"text":"On compilers"}}]}`}
+	if out := h.mustRun("", "saved"); !strings.Contains(out, "Grace Hopper") || !strings.Contains(out, "urn:li:activity:42") {
+		t.Errorf("saved: %s", out)
+	}
+	job := "urn:li:fsd_entityResultViewModel:(urn:li:fsd_jobPosting:4012345678,SEARCH_MY_ITEMS_JOB_SEEKER,DEFAULT)"
+	h.linkedin.replies["/graphql"] = reply{status: 200, body: `{"data":{"data":{"searchDashClustersByAll":{"elements":[{"items":[{"item":{"*entityResult":"` + job + `"}}]}]}}},"included":[` +
+		`{"entityUrn":"` + job + `","title":{"text":"Go engineer"},"primarySubtitle":{"text":"Acme"}}]}`}
+	if out := h.mustRun("", "jobs", "tracked", "--stage", "applied"); !strings.Contains(out, "Go engineer   id 4012345678") {
+		t.Errorf("jobs tracked: %s", out)
+	}
+	if code, _, _ := h.run("", "jobs", "tracked", "--stage", "nope"); code != 2 {
+		t.Error("an unknown stage should be a usage error")
 	}
 }

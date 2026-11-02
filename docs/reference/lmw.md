@@ -42,5 +42,6 @@ Start with `lmw auth import`.
 * [lmw notifications](lmw_notifications.md)	 - Show your latest notifications
 * [lmw post](lmw_post.md)	 - Write, publish, read and react to posts
 * [lmw profile](lmw_profile.md)	 - Look at a member's profile, contact info and posts
+* [lmw saved](lmw_saved.md)	 - Show the posts you saved
 * [lmw search](lmw_search.md)	 - Search people, companies, schools or groups
 

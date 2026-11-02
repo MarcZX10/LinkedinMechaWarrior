@@ -444,3 +444,25 @@ func Job(j api.Job, full bool) string {
 	}
 	return strings.Join(lines, "\n")
 }
+
+// SavedPosts formats saved posts with their links.
+func SavedPosts(posts []api.SavedPost) string {
+	width := Width()
+	blocks := make([]string, len(posts))
+	for i, p := range posts {
+		lines := []string{joinNonEmpty(" · ", firstNonEmpty(p.Author, "(unknown author)"), p.Age)}
+		if p.AuthorHeadline != "" {
+			lines = append(lines, truncate(p.AuthorHeadline, width))
+		}
+		if p.Text != "" {
+			body := Wrap(p.Text, width, "  ")
+			if len(body) > 3 {
+				body = append(body[:3], "  …")
+			}
+			lines = append(lines, body...)
+		}
+		lines = append(lines, "  "+p.URL)
+		blocks[i] = strings.Join(lines, "\n")
+	}
+	return strings.Join(blocks, "\n\n")
+}
