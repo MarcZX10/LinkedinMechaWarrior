@@ -229,7 +229,7 @@ func (a *app) limitsCommand() *cobra.Command {
 				if err := pacer.ClearCooldown(); err != nil {
 					return err
 				}
-				a.printf("Cooldown cleared.\n")
+				a.note("Cooldown cleared.\n")
 			}
 			usage := pacer.Usage()
 			if a.jsonOut {

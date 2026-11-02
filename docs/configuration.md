@@ -76,4 +76,7 @@ These work with every command, before or after its name:
 | `130` | Interrupted with <kbd>Ctrl</kbd>+<kbd>C</kbd> |
 
 Output goes to stdout; errors, warnings, prompts and debug logs go to stderr.
-That keeps `lmw feed --json > feed.json` clean even when something is logged.
+With `--json`, stdout carries only the JSON: messages for people, such as the
+post that `post publish` shows before asking for confirmation, go to stderr
+too. That keeps `lmw feed --json > feed.json` clean even when something is
+logged.

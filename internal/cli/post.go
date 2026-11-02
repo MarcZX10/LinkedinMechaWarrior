@@ -134,10 +134,10 @@ func (a *app) postPublishCommand() *cobra.Command {
 			if connectionsOnly {
 				audience, visibility = "your connections only", api.ConnectionsOnly
 			}
-			a.printf("%s\nVisible to: %s\n", output.PostPreview(text), audience)
+			a.note("%s\nVisible to: %s\n", output.PostPreview(text), audience)
 			ok, err := a.confirm("Type 'publish' to publish this post on LinkedIn: ", "publish")
 			if err != nil || !ok {
-				a.printf("Cancelled; nothing was published.\n")
+				a.note("Cancelled; nothing was published.\n")
 				return err
 			}
 

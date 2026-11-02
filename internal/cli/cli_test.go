@@ -300,6 +300,24 @@ func TestPublishNeedsConfirmation(t *testing.T) {
 	}
 }
 
+func TestPublishJSONKeepsStdoutClean(t *testing.T) {
+	h := newHarness(t)
+	h.importPasted()
+
+	code, stdout, stderr := h.run("publish\n", "post", "publish", "--text", "Hello LinkedIn", "--json")
+	var post map[string]any
+	if err := json.Unmarshal([]byte(stdout), &post); code != 0 || err != nil || post["urn"] != "urn:li:activity:99" {
+		t.Errorf("exit %d, stdout %q", code, stdout)
+	}
+	if !strings.Contains(stderr, "Hello LinkedIn") || !strings.Contains(stderr, "Visible to") {
+		t.Errorf("the post must still be shown before confirming, stderr %q", stderr)
+	}
+
+	if _, stdout, stderr := h.run("no\n", "post", "publish", "--text", "Hello LinkedIn", "--json"); stdout != "" || !strings.Contains(stderr, "nothing was published") {
+		t.Errorf("cancelled: stdout %q, stderr %q", stdout, stderr)
+	}
+}
+
 func TestOfflinePostCommands(t *testing.T) {
 	h := newHarness(t)
 	file := filepath.Join(t.TempDir(), "post.txt")
@@ -346,7 +364,10 @@ func TestRateLimitStartsACooldownThatBlocksLaterCommands(t *testing.T) {
 	if usage["cooldown_until"] == nil || usage["last_day"].(float64) != 2 {
 		t.Errorf("limits %v", usage)
 	}
-	h.mustRun("", "limits", "--clear-cooldown")
+	var cleared map[string]any
+	if err := json.Unmarshal([]byte(h.mustRun("", "limits", "--clear-cooldown", "--json")), &cleared); err != nil || cleared["cooldown_until"] != nil {
+		t.Errorf("limits --clear-cooldown --json: %v, %v", err, cleared)
+	}
 	h.mustRun("", "me")
 }
 

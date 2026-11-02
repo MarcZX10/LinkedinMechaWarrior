@@ -198,6 +198,16 @@ func (a *app) printf(format string, args ...any) {
 	fmt.Fprintf(a.stdout, format, args...)
 }
 
+// note prints a message for people. With --json it goes to stderr, so that
+// stdout only carries the JSON.
+func (a *app) note(format string, args ...any) {
+	w := a.stdout
+	if a.jsonOut {
+		w = a.stderr
+	}
+	fmt.Fprintf(w, format, args...)
+}
+
 // prompt reads one line from stdin.
 func (a *app) prompt(text string) (string, error) {
 	fmt.Fprint(a.stderr, text)
