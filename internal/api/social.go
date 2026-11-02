@@ -77,15 +77,26 @@ func Comments(ctx context.Context, c Client, post string, limit int) ([]Comment,
 	if err := checkLimit(limit, MaxListItems); err != nil {
 		return nil, err
 	}
-	return paginate(limit, func(start int) ([]Comment, int, error) {
-		raw, err := commentsQuery.Get(ctx, c, fmt.Sprintf("(count:%d,numReplies:1,socialDetailUrn:%s,sortOrder:RELEVANCE,start:%d)",
-			ListPageSize, restliValue(socialDetailURN(post)), start))
-		if err != nil {
-			return nil, 0, err
-		}
-		found, next := ParseComments(raw, start)
-		return found, next, nil
-	})
+	read := func(socialDetail string) ([]Comment, error) {
+		return paginate(limit, func(start int) ([]Comment, int, error) {
+			raw, err := commentsQuery.Get(ctx, c, fmt.Sprintf("(count:%d,numReplies:1,socialDetailUrn:%s,sortOrder:RELEVANCE,start:%d)",
+				ListPageSize, restliValue(socialDetail), start))
+			if err != nil {
+				return nil, 0, err
+			}
+			found, next := ParseComments(raw, start)
+			return found, next, nil
+		})
+	}
+	found, err := read(socialDetailURN(post))
+	if err != nil || len(found) > 0 {
+		return found, err
+	}
+	// A repost keeps the comments of the original post.
+	if t := postThread(ctx, c, post); t.socialDetail != socialDetailURN(post) {
+		return read(t.socialDetail)
+	}
+	return found, nil
 }
 
 // ParseComments reads a page of comments that started at start, and returns
@@ -124,14 +135,25 @@ func Reactions(ctx context.Context, c Client, post string, limit int) ([]Reactio
 	if err := checkLimit(limit, MaxListItems); err != nil {
 		return nil, err
 	}
-	return paginate(limit, func(start int) ([]Reaction, int, error) {
-		raw, err := reactionsQuery.Get(ctx, c, fmt.Sprintf("(count:%d,start:%d,threadUrn:%s)", ListPageSize, start, restliValue(post)))
-		if err != nil {
-			return nil, 0, err
-		}
-		found, next := ParseReactions(raw, start)
-		return found, next, nil
-	})
+	read := func(thread string) ([]Reaction, error) {
+		return paginate(limit, func(start int) ([]Reaction, int, error) {
+			raw, err := reactionsQuery.Get(ctx, c, fmt.Sprintf("(count:%d,start:%d,threadUrn:%s)", ListPageSize, start, restliValue(thread)))
+			if err != nil {
+				return nil, 0, err
+			}
+			found, next := ParseReactions(raw, start)
+			return found, next, nil
+		})
+	}
+	found, err := read(post)
+	if err != nil || len(found) > 0 {
+		return found, err
+	}
+	// A repost keeps the reactions of the original post.
+	if t := postThread(ctx, c, post); t.urn != post {
+		return read(t.urn)
+	}
+	return found, nil
 }
 
 // ParseReactions reads a page of reactions that started at start, and
@@ -175,13 +197,13 @@ func React(ctx context.Context, c Client, post, reaction string) error {
 	if !ok {
 		return errs.New(errs.Usage, "unknown reaction %q; use one of: %s", reaction, strings.Join(ReactionNames, ", "))
 	}
-	_, err := reactQuery.Execute(ctx, c, map[string]any{"entity": map[string]any{"reactionType": kind}, "threadUrn": post})
+	_, err := reactQuery.Execute(ctx, c, map[string]any{"entity": map[string]any{"reactionType": kind}, "threadUrn": postThread(ctx, c, post).urn})
 	return err
 }
 
 // Unreact removes your reaction from a post or comment.
 func Unreact(ctx context.Context, c Client, post string) error {
-	_, err := unreactQuery.Execute(ctx, c, map[string]any{"threadUrn": post})
+	_, err := unreactQuery.Execute(ctx, c, map[string]any{"threadUrn": postThread(ctx, c, post).urn})
 	return err
 }
 
@@ -199,7 +221,7 @@ func CommentOn(ctx context.Context, c Client, post, text string) (string, error)
 		{Key: "decorationId", Value: "com.linkedin.voyager.dash.deco.social.NormComment-43"},
 	}, map[string]any{
 		"commentary": map[string]any{"text": text, "attributesV2": []any{}, "$type": "com.linkedin.voyager.dash.common.text.TextViewModel"},
-		"threadUrn":  post,
+		"threadUrn":  postThread(ctx, c, post).urn,
 	})
 	if err != nil {
 		var httpErr *errs.HTTPError
@@ -233,4 +255,47 @@ func cleanURL(raw string) string {
 	}
 	u.RawQuery, u.Fragment = "", ""
 	return u.String()
+}
+
+// thread is how LinkedIn names the comments and reactions of a post. A
+// repost shares the thread of the original post, so the address of a post
+// in the feed is not always its thread; the post's SocialDetail says which.
+type thread struct {
+	socialDetail string // what the comments query takes
+	urn          string // what reactions and new comments take
+}
+
+// postThread finds the thread of a post or comment. For posts it asks
+// LinkedIn (one request); if that fails, it names the thread after the post.
+// Reads call it only when the post's own thread came back empty.
+func postThread(ctx context.Context, c Client, post string) thread {
+	fallback := thread{socialDetail: socialDetailURN(post), urn: post}
+	if IsComment(post) {
+		return fallback
+	}
+	raw, err := updateQuery.Get(ctx, c, "(updateUrn:"+restliValue("urn:li:fsd_update:("+post+",MESSAGING_RESHARE,EMPTY,DEFAULT,false)")+")")
+	if err != nil {
+		return fallback
+	}
+	if t := threadIn(raw, post); t.urn != "" {
+		return t
+	}
+	return fallback
+}
+
+// threadIn reads the thread of post from an answer that holds the post.
+func threadIn(raw []byte, post string) thread {
+	doc := normalized.Parse(raw)
+	for _, update := range append(doc.OfType("feed.Update"), doc.OfType("UpdateV2")...) {
+		if !strings.Contains(normalized.String(update["entityUrn"]), post+",") {
+			continue
+		}
+		if detail := doc.Ref(update, "socialDetail"); detail != nil {
+			t := thread{socialDetail: normalized.String(detail["entityUrn"]), urn: normalized.String(detail["threadUrn"])}
+			if strings.HasPrefix(t.socialDetail, "urn:li:fsd_socialDetail:") && t.urn != "" {
+				return t
+			}
+		}
+	}
+	return thread{}
 }

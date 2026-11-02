@@ -43,7 +43,14 @@ type routes struct {
 func (r *routes) reply(method, path string, params voyager.Params, payload any) ([]byte, error) {
 	r.calls = append(r.calls, call{method, path, params, payload})
 	base, _, _ := strings.Cut(path, "?")
-	for _, key := range []string{method + " " + path, path, method + " " + base, base} {
+	keys := []string{method + " " + path, path, method + " " + base, base}
+	for _, p := range params {
+		if p.Key == "queryId" {
+			name, _, _ := strings.Cut(p.Value, ".")
+			keys = append([]string{method + " " + base + "#" + name, base + "#" + name}, keys...)
+		}
+	}
+	for _, key := range keys {
 		if body, ok := r.replies[key]; ok {
 			return []byte(body), nil
 		}

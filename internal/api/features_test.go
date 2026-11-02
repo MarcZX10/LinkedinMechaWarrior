@@ -4,6 +4,8 @@ import (
 	"context"
 	"strings"
 	"testing"
+
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/voyager"
 )
 
 // graphqlDoc builds a GraphQL normalized response whose collection under key
@@ -285,5 +287,58 @@ func TestStaleQueriesTryTheNextVersionThenExplain(t *testing.T) {
 	}
 	if err := React(context.Background(), &routes{replies: map[string]string{"POST /graphql": `{}`}}, "urn:li:activity:1", "like"); err != nil {
 		t.Errorf("react: %v", err)
+	}
+}
+
+// reposted answers like LinkedIn for a repost: its own thread is empty and
+// the post's SocialDetail names the thread of the original post.
+type reposted struct {
+	*routes
+	original string
+}
+
+func (r reposted) Get(ctx context.Context, path string, params voyager.Params) ([]byte, error) {
+	vars := call{params: params}.param("variables")
+	if strings.Contains(vars, "updateUrn") || strings.Contains(vars, restliValue(r.original)) {
+		return r.routes.Get(ctx, path, params)
+	}
+	r.routes.calls = append(r.routes.calls, call{"GET", path, params, nil})
+	return []byte(`{"data":{"data":{}},"included":[]}`), nil
+}
+
+func TestRepostsReadTheThreadOfTheOriginalPost(t *testing.T) {
+	repost, original := "urn:li:activity:2", "urn:li:activity:1"
+	detail := "urn:li:fsd_socialDetail:(" + original + "," + repost + ",urn:li:highlightedReply:-)"
+	update := doc(t, map[string]any{},
+		map[string]any{"$type": "com.linkedin.voyager.dash.feed.Update", "entityUrn": "urn:li:fsd_update:(" + repost + ",MESSAGING_RESHARE,EMPTY,DEFAULT,false)", "*socialDetail": detail},
+		map[string]any{"$type": "com.linkedin.voyager.dash.social.SocialDetail", "entityUrn": detail, "threadUrn": original})
+	r := reposted{original: original, routes: &routes{replies: map[string]string{
+		"/graphql#voyagerFeedDashUpdates": update,
+		"/graphql#voyagerSocialDashReactions": graphqlDoc(t, "socialDashReactionsByReactionType", nil,
+			map[string]any{"entityUrn": "urn:li:fsd_reaction:1", "reactionType": "LIKE", "reactorLockup": map[string]any{"title": map[string]any{"text": "Alan Turing"}}}),
+		"/graphql#voyagerSocialDashComments": graphqlDoc(t, "socialDashCommentsBySocialDetail", nil,
+			map[string]any{"$type": "com.linkedin.voyager.dash.social.Comment", "entityUrn": "urn:li:fsd_comment:(1," + original + ")", "commentary": map[string]any{"text": "Nice"}}),
+	}}}
+	reactions, err := Reactions(context.Background(), r, repost, 5)
+	if err != nil || len(reactions) != 1 {
+		t.Fatalf("reactions of a repost %+v, %v", reactions, err)
+	}
+	if vars := r.last(t).param("variables"); !strings.Contains(vars, restliValue(original)) {
+		t.Errorf("reactions read %s, not the original thread", vars)
+	}
+	comments, err := Comments(context.Background(), r, repost, 5)
+	if err != nil || len(comments) != 1 {
+		t.Fatalf("comments of a repost %+v, %v", comments, err)
+	}
+	if vars := r.last(t).param("variables"); !strings.Contains(vars, restliValue(detail)) {
+		t.Errorf("comments read %s, not the post's SocialDetail", vars)
+	}
+}
+
+func TestPostsWithTheirOwnThreadCostOneRequest(t *testing.T) {
+	r := &routes{replies: map[string]string{"/graphql": graphqlDoc(t, "socialDashReactionsByReactionType", nil,
+		map[string]any{"entityUrn": "urn:li:fsd_reaction:1", "reactionType": "LIKE", "reactorLockup": map[string]any{"title": map[string]any{"text": "Alan Turing"}}})}}
+	if _, err := Reactions(context.Background(), r, "urn:li:activity:1", 5); err != nil || len(r.calls) != 1 {
+		t.Errorf("%d requests, %v", len(r.calls), err)
 	}
 }
