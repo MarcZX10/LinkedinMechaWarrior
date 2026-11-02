@@ -26,16 +26,20 @@ Start with `lmw auth import`.
 
 * [lmw api](lmw_api.md)	 - Send raw requests to LinkedIn's internal API
 * [lmw auth](lmw_auth.md)	 - Import, check or remove the LinkedIn session
+* [lmw company](lmw_company.md)	 - Look at and follow companies and schools
 * [lmw connect](lmw_connect.md)	 - Send a connection request (asks for confirmation)
 * [lmw connections](lmw_connections.md)	 - List your connections, most recently added first
 * [lmw feed](lmw_feed.md)	 - Show your home feed
 * [lmw har](lmw_har.md)	 - Inspect HAR files recorded in your browser
 * [lmw identity](lmw_identity.md)	 - Show or change which browser lmw presents itself as
 * [lmw invitations](lmw_invitations.md)	 - List and answer connection requests
+* [lmw jobs](lmw_jobs.md)	 - Search job postings and read them
 * [lmw limits](lmw_limits.md)	 - Show request budgets and cooldowns
 * [lmw mcp](lmw_mcp.md)	 - Let an AI assistant use lmw through MCP (stdio)
 * [lmw me](lmw_me.md)	 - Show your profile
+* [lmw messages](lmw_messages.md)	 - Read and send messages
 * [lmw notifications](lmw_notifications.md)	 - Show your latest notifications
-* [lmw post](lmw_post.md)	 - Draft, check and publish posts
+* [lmw post](lmw_post.md)	 - Write, publish, read and react to posts
 * [lmw profile](lmw_profile.md)	 - Look at a member's profile, contact info and posts
+* [lmw search](lmw_search.md)	 - Search people, companies, schools or groups
 

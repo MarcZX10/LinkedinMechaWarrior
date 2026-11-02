@@ -98,14 +98,31 @@ nav:
           - reference/lmw.md
           - reference/lmw_auth.md
           - reference/lmw_auth_import.md
-          - reference/lmw_auth_status.md
           - reference/lmw_auth_logout.md
+          - reference/lmw_auth_status.md
           - reference/lmw_me.md
           - reference/lmw_feed.md
           - reference/lmw_profile.md
-          - reference/lmw_profile_show.md
           - reference/lmw_profile_contact.md
+          - reference/lmw_profile_follow.md
           - reference/lmw_profile_posts.md
+          - reference/lmw_profile_show.md
+          - reference/lmw_profile_unfollow.md
+          - reference/lmw_post.md
+          - reference/lmw_post_comment.md
+          - reference/lmw_post_comments.md
+          - reference/lmw_post_delete.md
+          - reference/lmw_post_draft.md
+          - reference/lmw_post_preview.md
+          - reference/lmw_post_publish.md
+          - reference/lmw_post_react.md
+          - reference/lmw_post_reactions.md
+          - reference/lmw_post_show.md
+          - reference/lmw_post_unreact.md
+          - reference/lmw_messages.md
+          - reference/lmw_messages_read.md
+          - reference/lmw_messages_send.md
+          - reference/lmw_messages_show.md
           - reference/lmw_notifications.md
           - reference/lmw_invitations.md
           - reference/lmw_invitations_accept.md
@@ -115,21 +132,25 @@ nav:
           - reference/lmw_connect.md
           - reference/lmw_connections.md
           - reference/lmw_connections_remove.md
-          - reference/lmw_post.md
-          - reference/lmw_post_draft.md
-          - reference/lmw_post_preview.md
-          - reference/lmw_post_publish.md
+          - reference/lmw_search.md
+          - reference/lmw_company.md
+          - reference/lmw_company_follow.md
+          - reference/lmw_company_show.md
+          - reference/lmw_company_unfollow.md
+          - reference/lmw_jobs.md
+          - reference/lmw_jobs_search.md
+          - reference/lmw_jobs_show.md
+          - reference/lmw_limits.md
+          - reference/lmw_mcp.md
           - reference/lmw_api.md
           - reference/lmw_api_get.md
           - reference/lmw_har.md
           - reference/lmw_har_inspect.md
           - reference/lmw_har_learn.md
           - reference/lmw_identity.md
-          - reference/lmw_identity_show.md
           - reference/lmw_identity_import.md
           - reference/lmw_identity_reset.md
-          - reference/lmw_limits.md
-          - reference/lmw_mcp.md
+          - reference/lmw_identity_show.md
 
 extra:
   social:

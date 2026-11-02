@@ -78,12 +78,17 @@ func paginate[T any](limit int, page func(start int) ([]T, int, error)) ([]T, er
 	return items, nil
 }
 
-// pageEnd is where the next page starts, or start when this one was empty.
-func pageEnd(coll normalized.Object, start, n int) int {
+// pageEnd is where the page after one of n elements, asked with this page
+// size, starts: LinkedIn's nextStart when it gives one, otherwise start+n,
+// or start (no more pages) after an empty or short page.
+func pageEnd(coll normalized.Object, start, n, size int) int {
 	if n == 0 {
 		return start
 	}
-	return nextStart(coll, start, n)
+	if next := nextStart(coll, start, n); next != start+n || n >= size {
+		return next
+	}
+	return start
 }
 
 // personIn finds the member an entity is about: an inline or referenced
@@ -190,7 +195,7 @@ func ParseInvitations(raw []byte, who string, start int) ([]Invitation, int) {
 			Sent:    millisDate(inv["sentTime"]),
 		})
 	}
-	return out, pageEnd(coll, start, n)
+	return out, pageEnd(coll, start, n, ListPageSize)
 }
 
 // invitationID returns the number at the end of an invitation URN, such as
@@ -349,7 +354,7 @@ func ParseConnections(raw []byte, start int) ([]Connection, int) {
 		}
 		out = append(out, Connection{Name: name, Headline: headline, URL: url, URN: urn, Since: millisDate(firstOf(item, "createdAt", "createdTime"))})
 	}
-	return out, pageEnd(coll, start, n)
+	return out, pageEnd(coll, start, n, ListPageSize)
 }
 
 func firstOf(entity normalized.Object, keys ...string) any {

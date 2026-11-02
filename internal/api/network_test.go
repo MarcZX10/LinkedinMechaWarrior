@@ -24,9 +24,9 @@ func invitationsPage(t *testing.T) string {
 }
 
 func TestParseInvitations(t *testing.T) {
-	invitations, n := ParseInvitations([]byte(invitationsPage(t)), "fromMember", 0)
-	if n != 2 || len(invitations) != 2 {
-		t.Fatalf("got %d of %d", len(invitations), n)
+	invitations, next := ParseInvitations([]byte(invitationsPage(t)), "fromMember", 0)
+	if next != 0 || len(invitations) != 2 {
+		t.Fatalf("got %d, next page at %d", len(invitations), next)
 	}
 	first := invitations[0]
 	if first.ID != "7001" || first.Secret != "s3cret" || first.Name != "Grace Hopper" || first.Headline != "Admiral" ||
@@ -81,9 +81,9 @@ func TestParseConnections(t *testing.T) {
 		map[string]any{"entityUrn": "urn:li:fsd_connection:1", "createdAt": 1700000000000, "*connectedMemberResolutionResult": "urn:li:fsd_profile:ACoAAG"},
 		map[string]any{"entityUrn": "urn:li:fsd_profile:ACoAAG", "firstName": "Grace", "lastName": "Hopper", "headline": "Admiral", "publicIdentifier": "grace"},
 	)
-	connections, n := ParseConnections([]byte(raw), 0)
-	if n != 1 || len(connections) != 1 {
-		t.Fatalf("got %d of %d", len(connections), n)
+	connections, next := ParseConnections([]byte(raw), 0)
+	if next != 0 || len(connections) != 1 {
+		t.Fatalf("got %d, next page at %d", len(connections), next)
 	}
 	if c := connections[0]; c.Name != "Grace Hopper" || c.Headline != "Admiral" || c.URN != "urn:li:fsd_profile:ACoAAG" || c.Since != "2023-11-14" {
 		t.Errorf("connection %+v", c)
@@ -98,9 +98,9 @@ func TestParseNotifications(t *testing.T) {
 		},
 		map[string]any{"entityUrn": "urn:li:fsd_notificationCard:2", "read": true},
 	)
-	notifications, n := ParseNotifications([]byte(raw), 0)
-	if n != 2 || len(notifications) != 1 {
-		t.Fatalf("got %d of %d", len(notifications), n)
+	notifications, next := ParseNotifications([]byte(raw), 0)
+	if next != 0 || len(notifications) != 1 {
+		t.Fatalf("got %d, next page at %d", len(notifications), next)
 	}
 	if got := notifications[0]; got.Text != "Grace commented on your post" || got.Read || !strings.Contains(got.URL, "activity:1") {
 		t.Errorf("notification %+v", got)

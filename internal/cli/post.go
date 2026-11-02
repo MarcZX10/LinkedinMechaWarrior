@@ -19,9 +19,11 @@ import (
 func (a *app) postCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "post",
-		Short: "Draft, check and publish posts",
+		Short: "Write, publish, read and react to posts",
 	}
-	cmd.AddCommand(a.postDraftCommand(), a.postPreviewCommand(), a.postPublishCommand())
+	cmd.AddCommand(a.postDraftCommand(), a.postPreviewCommand(), a.postPublishCommand(),
+		a.postShowCommand(), a.postCommentsCommand(), a.postReactionsCommand(),
+		a.postReactCommand(), a.postUnreactCommand(), a.postCommentCommand(), a.postDeleteCommand())
 	return cmd
 }
 
@@ -65,11 +67,15 @@ func (a *app) postDraftCommand() *cobra.Command {
 	return cmd
 }
 
-type textSource struct{ text, file string }
+// textSource is a text given with --text or --text-file; what names it in
+// help and errors ("post" when empty).
+type textSource struct{ what, text, file string }
+
+func (s *textSource) name() string { return firstNonEmptyString(s.what, "post") }
 
 func (s *textSource) register(cmd *cobra.Command) {
-	cmd.Flags().StringVar(&s.text, "text", "", "post text")
-	cmd.Flags().StringVar(&s.file, "text-file", "", "file with the post text")
+	cmd.Flags().StringVar(&s.text, "text", "", s.name()+" text")
+	cmd.Flags().StringVar(&s.file, "text-file", "", "file with the "+s.name()+" text")
 }
 
 func (s *textSource) read() (string, error) {
@@ -77,7 +83,7 @@ func (s *textSource) read() (string, error) {
 	case s.text != "" && s.file != "":
 		return "", errs.New(errs.Usage, "use either --text or --text-file, not both")
 	case s.text == "" && s.file == "":
-		return "", errs.New(errs.Usage, "give the post with --text or --text-file")
+		return "", errs.New(errs.Usage, "give the %s with --text or --text-file", s.name())
 	case s.file == "":
 		return postgen.Normalize(s.text), nil
 	}

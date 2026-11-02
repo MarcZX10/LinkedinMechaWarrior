@@ -25,5 +25,5 @@ lmw post preview [flags]
 
 ### SEE ALSO
 
-* [lmw post](lmw_post.md)	 - Draft, check and publish posts
+* [lmw post](lmw_post.md)	 - Write, publish, read and react to posts
 

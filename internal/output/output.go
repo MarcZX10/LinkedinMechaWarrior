@@ -278,3 +278,166 @@ func Notifications(notifications []api.Notification) string {
 	}
 	return strings.Join(blocks, "\n\n")
 }
+
+// Comments formats comments with their authors.
+func Comments(comments []api.Comment) string {
+	width := Width()
+	blocks := make([]string, len(comments))
+	for i, c := range comments {
+		lines := []string{joinNonEmpty(" · ", firstNonEmpty(c.Author, "(unknown author)"), c.Date)}
+		if c.AuthorHeadline != "" {
+			lines = append(lines, truncate(c.AuthorHeadline, width))
+		}
+		lines = append(lines, Wrap(c.Text, width, "  ")...)
+		var stats []string
+		if c.Reactions != nil && *c.Reactions > 0 {
+			stats = append(stats, fmt.Sprintf("%d reactions", *c.Reactions))
+		}
+		if c.Replies != nil && *c.Replies > 0 {
+			stats = append(stats, fmt.Sprintf("%d replies", *c.Replies))
+		}
+		if len(stats) > 0 {
+			lines = append(lines, "  "+strings.Join(stats, " · "))
+		}
+		blocks[i] = strings.Join(lines, "\n")
+	}
+	return strings.Join(blocks, "\n\n")
+}
+
+// Reactions formats who reacted, one per line.
+func Reactions(reactions []api.Reaction) string {
+	width := Width()
+	lines := make([]string, len(reactions))
+	for i, r := range reactions {
+		lines[i] = truncate(fmt.Sprintf("%-10s %s", r.Type, joinNonEmpty(" · ", r.Name, r.Headline)), width)
+	}
+	return strings.Join(lines, "\n")
+}
+
+// Conversations formats an inbox, unread conversations marked with a dot.
+func Conversations(conversations []api.Conversation) string {
+	width := Width()
+	blocks := make([]string, len(conversations))
+	for i, c := range conversations {
+		marker := "  "
+		if c.Unread > 0 {
+			marker = "• "
+		}
+		with := firstNonEmpty(c.Title, strings.Join(c.With, ", "), "(no participants)")
+		lines := []string{marker + joinNonEmpty(" · ", with, c.Date) + "   id " + c.ID}
+		if c.LastMessage != "" {
+			last := c.LastMessage
+			if c.LastSender != "" {
+				last = c.LastSender + ": " + last
+			}
+			lines = append(lines, "  "+truncate(strings.Join(strings.Fields(last), " "), width-2))
+		}
+		blocks[i] = strings.Join(lines, "\n")
+	}
+	return strings.Join(blocks, "\n\n")
+}
+
+// Messages formats a conversation like a chat, oldest first.
+func Messages(messages []api.Message) string {
+	width := Width()
+	blocks := make([]string, len(messages))
+	for i, m := range messages {
+		lines := []string{joinNonEmpty(" · ", firstNonEmpty(m.Sender, "(unknown)"), m.Date)}
+		lines = append(lines, Wrap(m.Text, width, "  ")...)
+		blocks[i] = strings.Join(lines, "\n")
+	}
+	return strings.Join(blocks, "\n\n")
+}
+
+// SearchResults formats search results.
+func SearchResults(results []api.SearchResult) string {
+	width := Width()
+	blocks := make([]string, len(results))
+	for i, r := range results {
+		lines := []string{r.Name}
+		if details := joinNonEmpty(" · ", r.Subtitle, r.Location); details != "" {
+			lines = append(lines, "  "+truncate(details, width-2))
+		}
+		if r.URL != "" {
+			lines = append(lines, "  "+r.URL)
+		}
+		blocks[i] = strings.Join(lines, "\n")
+	}
+	return strings.Join(blocks, "\n\n")
+}
+
+// Company formats a company page.
+func Company(c api.Company) string {
+	width := Width()
+	lines := []string{c.Name}
+	if c.Tagline != "" {
+		lines = append(lines, Wrap(c.Tagline, width, "")...)
+	}
+	facts := []string{strings.Join(c.Industries, ", "), c.Headquarters, c.Size}
+	if c.Followers != nil {
+		facts = append(facts, fmt.Sprintf("%d followers", *c.Followers))
+	}
+	if c.Founded != nil {
+		facts = append(facts, fmt.Sprintf("founded %d", *c.Founded))
+	}
+	if line := joinNonEmpty(" · ", facts...); line != "" {
+		lines = append(lines, Wrap(line, width, "")...)
+	}
+	for _, link := range []string{c.Website, c.URL} {
+		if link != "" {
+			lines = append(lines, link)
+		}
+	}
+	if c.Description != "" {
+		lines = append(lines, "")
+		lines = append(lines, Wrap(c.Description, width, "  ")...)
+	}
+	return strings.Join(lines, "\n")
+}
+
+// Jobs formats job search results.
+func Jobs(jobs []api.Job) string {
+	width := Width()
+	blocks := make([]string, len(jobs))
+	for i, j := range jobs {
+		lines := []string{j.Title + "   id " + j.ID}
+		if details := joinNonEmpty(" · ", j.Company, j.Location); details != "" {
+			lines = append(lines, "  "+truncate(details, width-2))
+		}
+		lines = append(lines, "  "+j.URL)
+		blocks[i] = strings.Join(lines, "\n")
+	}
+	return strings.Join(blocks, "\n\n")
+}
+
+// Job formats a job posting; full disables truncation of the description.
+func Job(j api.Job, full bool) string {
+	width := Width()
+	lines := []string{j.Title}
+	if line := joinNonEmpty(" · ", j.Company, j.Location, j.Workplace); line != "" {
+		lines = append(lines, line)
+	}
+	facts := []string{}
+	if j.Listed != "" {
+		facts = append(facts, "listed "+j.Listed)
+	}
+	if j.Applicants != nil {
+		facts = append(facts, fmt.Sprintf("%d applicants", *j.Applicants))
+	}
+	if line := joinNonEmpty(" · ", facts...); line != "" {
+		lines = append(lines, line)
+	}
+	lines = append(lines, j.URL)
+	if j.ApplyURL != "" {
+		lines = append(lines, "Apply: "+j.ApplyURL)
+	}
+	if j.Description != "" {
+		body := Wrap(j.Description, width, "  ")
+		if !full && len(body) > 3*previewLines {
+			body = append(body[:3*previewLines], "  … (use --full to see everything)")
+		}
+		lines = append(lines, "")
+		lines = append(lines, body...)
+	}
+	return strings.Join(lines, "\n")
+}

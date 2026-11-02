@@ -19,7 +19,8 @@ func (a *app) profileCommand() *cobra.Command {
 			"PROFILE is the address of the profile (linkedin.com/in/NAME), NAME itself,\n" +
 			"or a member URN.",
 	}
-	cmd.AddCommand(a.profileShowCommand(), a.profileContactCommand(), a.profilePostsCommand())
+	cmd.AddCommand(a.profileShowCommand(), a.profileContactCommand(), a.profilePostsCommand(),
+		a.followCommand("profile", true), a.followCommand("profile", false))
 	return cmd
 }
 

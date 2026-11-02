@@ -28,6 +28,8 @@ or a member URN.
 
 * [lmw](lmw.md)	 - A command-line client for LinkedIn
 * [lmw profile contact](lmw_profile_contact.md)	 - Show the contact info a member shares with you
+* [lmw profile follow](lmw_profile_follow.md)	 - Follow a member (asks for confirmation)
 * [lmw profile posts](lmw_profile_posts.md)	 - Show a member's recent posts
 * [lmw profile show](lmw_profile_show.md)	 - Show a profile: headline, about, experience, education, skills
+* [lmw profile unfollow](lmw_profile_unfollow.md)	 - Unfollow a member (asks for confirmation)
 

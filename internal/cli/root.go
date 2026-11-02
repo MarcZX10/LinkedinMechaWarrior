@@ -157,7 +157,8 @@ func (a *app) rootCommand() *cobra.Command {
 	root.SetVersionTemplate("lmw {{.Version}}\n")
 
 	root.AddCommand(a.authCommand(), a.meCommand(), a.feedCommand(), a.profileCommand(), a.postCommand(),
-		a.notificationsCommand(), a.invitationsCommand(), a.connectCommand(), a.connectionsCommand(),
+		a.messagesCommand(), a.notificationsCommand(), a.invitationsCommand(), a.connectCommand(), a.connectionsCommand(),
+		a.searchCommand(), a.companyCommand(), a.jobsCommand(),
 		a.apiCommand(), a.harCommand(), a.identityCommand(), a.limitsCommand(), a.mcpCommand())
 	return root
 }
@@ -252,4 +253,8 @@ func exactArgs(n int, what string) cobra.PositionalArgs {
 		}
 		return nil
 	}
+}
+
+func errUsage(format string, args ...any) error {
+	return errs.New(errs.Usage, format, args...)
 }

@@ -74,5 +74,5 @@ func ParseNotifications(raw []byte, start int) ([]Notification, int) {
 			Read: read,
 		})
 	}
-	return out, pageEnd(coll, start, n)
+	return out, pageEnd(coll, start, n, ListPageSize)
 }

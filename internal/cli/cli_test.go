@@ -586,3 +586,125 @@ func TestHARLearnSavesQueriesThatLaterRequestsUse(t *testing.T) {
 		t.Errorf("the learned version was not tried first: %s", q)
 	}
 }
+
+func TestPostInteractions(t *testing.T) {
+	h := newHarness(t)
+	h.importPasted()
+	post := "https://www.linkedin.com/feed/update/urn:li:activity:42/"
+	h.linkedin.replies["/graphql"] = reply{status: 200, body: `{"data":{"data":{"socialDashCommentsBySocialDetail":{"*elements":["urn:li:fsd_comment:(1,urn:li:activity:42)"]}}},"included":[` +
+		`{"entityUrn":"urn:li:fsd_comment:(1,urn:li:activity:42)","commenter":{"title":{"text":"Grace Hopper"}},"commentary":{"text":"Nice one"}}]}`}
+	if out := h.mustRun("", "post", "comments", post); !strings.Contains(out, "Grace Hopper") || !strings.Contains(out, "Nice one") {
+		t.Errorf("post comments: %s", out)
+	}
+
+	before := len(h.linkedin.requests)
+	h.mustRun("no\n", "post", "react", post, "--type", "celebrate")
+	if len(h.linkedin.requests) != before {
+		t.Error("a cancelled reaction sent a request")
+	}
+	h.linkedin.replies["/graphql"] = reply{status: 200, body: `{}`}
+	if out := h.mustRun("react\n", "post", "react", post, "--type", "celebrate"); !strings.Contains(out, "Reacted celebrate") {
+		t.Errorf("post react: %s", out)
+	}
+	if last := h.linkedin.bodies[len(h.linkedin.bodies)-1]; !strings.Contains(last, `"reactionType":"PRAISE"`) {
+		t.Errorf("react payload %s", last)
+	}
+	if code, _, stderr := h.run("", "post", "react", post, "--type", "meh"); code != 2 || !strings.Contains(stderr, "celebrate") {
+		t.Errorf("unknown reaction: exit %d, %s", code, stderr)
+	}
+
+	h.linkedin.replies["/voyagerSocialDashNormComments"] = reply{status: 201, body: `{}`}
+	if out := h.mustRun("comment\n", "post", "comment", post, "--text", "Well said"); !strings.Contains(out, "Comment posted") {
+		t.Errorf("post comment: %s", out)
+	}
+	h.linkedin.replies["/contentcreation/normShares/urn:li:activity:42"] = reply{status: 204}
+	if out := h.mustRun("delete\n", "post", "delete", "urn:li:activity:42"); !strings.Contains(out, "Post deleted") {
+		t.Errorf("post delete: %s", out)
+	}
+	if last := h.linkedin.requests[len(h.linkedin.requests)-1]; last.Method != "DELETE" {
+		t.Errorf("delete sent %s", last.Method)
+	}
+}
+
+func TestMessagesCommands(t *testing.T) {
+	h := newHarness(t)
+	h.importPasted()
+	h.linkedin.replies["/voyagerMessagingGraphQL/graphql"] = reply{status: 200, body: `{"data":{"data":{"messengerConversationsByCategoryQuery":{"*elements":["urn:li:msg_conversation:(urn:li:fsd_profile:1,2-abc==)"]}}},"included":[` +
+		`{"entityUrn":"urn:li:msg_conversation:(urn:li:fsd_profile:1,2-abc==)","title":"Grace Hopper","unreadCount":1}]}`}
+	if out := h.mustRun("", "messages"); !strings.Contains(out, "• Grace Hopper") || !strings.Contains(out, "id 2-abc==") {
+		t.Errorf("messages: %s", out)
+	}
+	h.linkedin.replies["/voyagerMessagingDashMessengerMessages"] = reply{status: 200, body: `{}`}
+	if code, _, _ := h.run("", "messages", "send", "--text", "Hi"); code != 2 {
+		t.Error("send needs --to or --conversation")
+	}
+	before := len(h.linkedin.requests)
+	h.mustRun("no\n", "messages", "send", "--conversation", "2-abc==", "--text", "Hi")
+	if len(h.linkedin.requests) != before {
+		t.Error("a cancelled message sent requests")
+	}
+	if out := h.mustRun("send\n", "messages", "send", "--conversation", "2-abc==", "--text", "Hi Grace"); !strings.Contains(out, "Message sent") {
+		t.Errorf("messages send: %s", out)
+	}
+	if last := h.linkedin.bodies[len(h.linkedin.bodies)-1]; !strings.Contains(last, `"text":"Hi Grace"`) || !strings.Contains(last, "2-abc==") {
+		t.Errorf("message payload %s", last)
+	}
+}
+
+func TestSearchCompanyAndJobs(t *testing.T) {
+	h := newHarness(t)
+	h.importPasted()
+	h.linkedin.replies["/graphql"] = reply{status: 200, body: `{"data":{"data":{"searchDashClustersByAll":{"elements":[{"items":[{"item":{"*entityResult":"urn:li:r:1"}}]}]}}},"included":[` +
+		`{"entityUrn":"urn:li:r:1","title":{"text":"Grace Hopper"},"primarySubtitle":{"text":"Admiral"},"navigationUrl":"https://www.linkedin.com/in/grace?x=1"}]}`}
+	if out := h.mustRun("", "search", "people", "grace", "--network", "1st"); !strings.Contains(out, "Grace Hopper") || !strings.Contains(out, "https://www.linkedin.com/in/grace\n") {
+		t.Errorf("search: %s", out)
+	}
+	if code, _, _ := h.run("", "search", "posts", "go"); code != 2 {
+		t.Error("searching posts should be a usage error")
+	}
+
+	h.linkedin.replies["/organization/companies"] = reply{status: 200, body: `{"data":{"*elements":["urn:li:fs_normalized_company:7"]},"included":[` +
+		`{"$type":"com.linkedin.voyager.organization.Company","entityUrn":"urn:li:fs_normalized_company:7","name":"Acme","universalName":"acme","tagline":"We make things"}]}`}
+	if out := h.mustRun("", "company", "show", "https://www.linkedin.com/company/acme/"); !strings.Contains(out, "Acme") || !strings.Contains(out, "We make things") {
+		t.Errorf("company show: %s", out)
+	}
+	h.linkedin.replies["/feed/dash/followingStates/urn:li:fsd_followingState:urn:li:fsd_company:7"] = reply{status: 200}
+	if out := h.mustRun("follow\n", "company", "follow", "acme"); !strings.Contains(out, "Followed acme") {
+		t.Errorf("company follow: %s", out)
+	}
+
+	h.linkedin.replies["/voyagerJobsDashJobCards"] = reply{status: 200, body: `{"data":{"*elements":[]},"included":[` +
+		`{"$type":"com.linkedin.voyager.dash.jobs.JobPostingCard","entityUrn":"urn:li:fsd_jobPostingCard:(4012345678,JOBS_SEARCH)","jobPostingTitle":"Go engineer","primaryDescription":{"text":"Acme"},"*jobPosting":"urn:li:fsd_jobPosting:4012345678"}]}`}
+	var jobs []map[string]any
+	if err := json.Unmarshal([]byte(h.mustRun("", "jobs", "search", "go", "--workplace", "remote", "--json")), &jobs); err != nil || len(jobs) != 1 || jobs[0]["id"] != "4012345678" {
+		t.Errorf("jobs search: %v %v", jobs, err)
+	}
+	h.linkedin.replies["/jobs/jobPostings/4012345678"] = reply{status: 200, body: `{"data":{"title":"Go engineer","formattedLocation":"Barcelona","description":{"text":"Build CLIs."}},"included":[]}`}
+	if out := h.mustRun("", "jobs", "show", "https://www.linkedin.com/jobs/view/4012345678/"); !strings.Contains(out, "Build CLIs.") {
+		t.Errorf("jobs show: %s", out)
+	}
+}
+
+func TestMCPOffersEveryFeature(t *testing.T) {
+	h := newHarness(t)
+	answers := h.mcpSession([]string{"--allow-write"},
+		`{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{}}}`,
+		`{"jsonrpc":"2.0","id":2,"method":"tools/list"}`,
+	)
+	names := map[string]bool{}
+	for _, tool := range answers[2]["result"].(map[string]any)["tools"].([]any) {
+		t := tool.(map[string]any)
+		names[t["name"].(string)] = true
+	}
+	for _, want := range []string{
+		"get_my_profile", "get_feed", "get_profile", "get_profile_posts", "get_contact_info", "get_post", "get_post_comments",
+		"get_post_reactions", "list_conversations", "get_conversation", "get_notifications", "list_invitations", "list_connections",
+		"search", "get_company", "search_jobs", "get_job", "get_request_budget", "linkedin_api_get",
+		"publish_post", "comment_on_post", "react_to_post", "remove_reaction", "delete_post", "send_message", "mark_conversation_read",
+		"answer_invitation", "withdraw_invitation", "send_connection_request", "remove_connection", "set_following",
+	} {
+		if !names[want] {
+			t.Errorf("tool %s is missing", want)
+		}
+	}
+}
