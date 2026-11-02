@@ -114,9 +114,12 @@ func TestDoctorProbeReadsEveryFeatureAndStopsOnPushback(t *testing.T) {
 	h.importPasted()
 	empty := reply{status: 200, body: `{"data":{"*elements":[]},"included":[]}`}
 	for _, path := range []string{"/voyagerIdentityDashNotificationCards", "/relationships/invitationViews", "/relationships/dash/connections",
-		"/voyagerMessagingGraphQL/graphql", "/graphql", "/voyagerJobsDashJobCards"} {
+		"/voyagerMessagingGraphQL/graphql", "/voyagerJobsDashJobCards"} {
 		h.linkedin.replies[path] = empty
 	}
+	// Search (and saved posts, the same query) find the person themself.
+	h.linkedin.replies["/graphql"] = reply{status: 200, body: `{"data":{"data":{"searchDashClustersByAll":{"elements":[{"items":[{"item":{"*entityResult":"urn:li:r:1"}}]}]}}},"included":[` +
+		`{"entityUrn":"urn:li:r:1","title":{"text":"Ada Lovelace"}}]}`}
 	h.linkedin.replies["/identity/dash/profiles"] = reply{status: 200, body: dashProfileJSON}
 	h.linkedin.replies["/organization/companies"] = reply{status: 200, body: `{"data":{"*elements":["urn:li:fs_normalized_company:1"]},"included":[` +
 		`{"$type":"com.linkedin.voyager.organization.Company","entityUrn":"urn:li:fs_normalized_company:1","name":"LinkedIn","universalName":"linkedin"}]}`}
@@ -126,6 +129,11 @@ func TestDoctorProbeReadsEveryFeatureAndStopsOnPushback(t *testing.T) {
 		if !strings.Contains(out, "✔ probe "+name) {
 			t.Errorf("probe %s did not pass:\n%s", name, out)
 		}
+	}
+
+	h.linkedin.replies["/graphql"] = empty
+	if code, out, _ := h.run("", "doctor", "--probe"); code == 0 || !strings.Contains(out, "✘ probe search") || !strings.Contains(out, "found nobody") {
+		t.Errorf("an empty search must fail the probe: exit %d\n%s", code, out)
 	}
 
 	h.linkedin.replies["/feed/updatesV2"] = reply{status: 999}

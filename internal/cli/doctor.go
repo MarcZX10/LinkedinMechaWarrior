@@ -60,9 +60,9 @@ func (a *app) doctorCommand() *cobra.Command {
 					if !c.OK {
 						mark = "✘"
 					}
-					a.printf("%s %-14s %s\n", mark, c.Name, c.Detail)
+					a.printf("%s %-19s %s\n", mark, c.Name, c.Detail)
 					if c.Fix != "" {
-						a.printf("  %-14s → %s\n", "", c.Fix)
+						a.printf("  %-19s → %s\n", "", c.Fix)
 					}
 				}
 			}
@@ -164,7 +164,13 @@ var probes = []probe{
 		return countOf(api.Conversations(ctx, c, "inbox", 1))
 	}},
 	{"search", func(ctx context.Context, c *voyager.Client, me api.Profile) (string, error) {
-		return countOf(api.Search(ctx, c, "people", me.Name, api.SearchOptions{}, 1))
+		// Your own name always finds someone; nothing means search itself broke,
+		// even though LinkedIn answers 200.
+		found, err := api.Search(ctx, c, "people", me.Name, api.SearchOptions{}, 1)
+		if err == nil && len(found) == 0 {
+			err = errs.New(errs.API, "searching your own name found nobody, so LinkedIn's search answers empty")
+		}
+		return countOf(found, err)
 	}},
 	{"saved", func(ctx context.Context, c *voyager.Client, _ api.Profile) (string, error) {
 		return countOf(api.SavedPosts(ctx, c, 1))
