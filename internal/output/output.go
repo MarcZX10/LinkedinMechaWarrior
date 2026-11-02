@@ -225,3 +225,56 @@ func joinNonEmpty(separator string, values ...string) string {
 	}
 	return strings.Join(kept, separator)
 }
+
+// Invitations formats a list of invitations with the ids used to answer them.
+func Invitations(invitations []api.Invitation) string {
+	width := Width()
+	blocks := make([]string, len(invitations))
+	for i, inv := range invitations {
+		lines := []string{joinNonEmpty(" · ", inv.Name, inv.Sent) + "   id " + inv.ID}
+		if inv.Headline != "" {
+			lines = append(lines, "  "+truncate(inv.Headline, width-2))
+		}
+		if inv.Message != "" {
+			lines = append(lines, Wrap("“"+inv.Message+"”", width, "  ")...)
+		}
+		if inv.Profile != "" {
+			lines = append(lines, "  "+inv.Profile)
+		}
+		blocks[i] = strings.Join(lines, "\n")
+	}
+	return strings.Join(blocks, "\n\n")
+}
+
+// Connections formats a list of connections, one per line.
+func Connections(connections []api.Connection) string {
+	width := Width()
+	lines := make([]string, len(connections))
+	for i, c := range connections {
+		line := joinNonEmpty(" · ", c.Name, c.Headline)
+		if c.URL != "" {
+			line = truncate(line, max(20, width-len(c.URL)-3)) + "   " + c.URL
+		}
+		lines[i] = line
+	}
+	return strings.Join(lines, "\n")
+}
+
+// Notifications formats notifications, unread ones marked with a dot.
+func Notifications(notifications []api.Notification) string {
+	width := Width()
+	blocks := make([]string, len(notifications))
+	for i, n := range notifications {
+		marker := "  "
+		if !n.Read {
+			marker = "• "
+		}
+		lines := Wrap(n.Text, width, "  ")
+		lines[0] = marker + strings.TrimPrefix(lines[0], "  ")
+		if details := joinNonEmpty("   ", n.Date, n.URL); details != "" {
+			lines = append(lines, "  "+details)
+		}
+		blocks[i] = strings.Join(lines, "\n")
+	}
+	return strings.Join(blocks, "\n\n")
+}

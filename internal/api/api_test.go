@@ -171,6 +171,10 @@ func (f *fakeClient) Delete(context.Context, string, voyager.Params) ([]byte, er
 	return f.response, nil
 }
 
+func (f *fakeClient) PostSDUI(context.Context, string, voyager.Params, any) ([]byte, error) {
+	return f.response, nil
+}
+
 func pageOf(t *testing.T, from, to int) []byte {
 	var updates []update
 	for i := from; i < to; i++ {

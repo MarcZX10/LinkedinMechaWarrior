@@ -74,48 +74,66 @@ func TestParseProfileViewDashShape(t *testing.T) {
 }
 
 func TestParseContactInfo(t *testing.T) {
-	raw := doc(t, map[string]any{
-		"emailAddress":   "ada@example.com",
-		"phoneNumbers":   []any{map[string]any{"number": "+44 1234", "type": "MOBILE"}},
-		"websites":       []any{map[string]any{"url": "https://ada.example"}},
-		"twitterHandles": []any{map[string]any{"name": "ada"}},
-		"birthDateOn":    map[string]any{"month": 12, "day": 10},
-	})
-	info := ParseContactInfo([]byte(raw))
-	if info.Email != "ada@example.com" || info.Phones[0] != "+44 1234" || info.Websites[0] != "https://ada.example" ||
-		info.Twitter[0] != "@ada" || info.Birthday != "12-10" {
+	// Cut down from the overlay stream: a label, then the field's view and value.
+	label := func(text string) string {
+		return `["$","p",null,{"className":"t-16 t-black t-bold","children":["` + text + `"]}]`
+	}
+	stream := `0:{"x":1}` + "\n" + `1:["$","div",null,{"viewName":"profile-contact-info-details-view"}]` +
+		`{"viewName":"contact-email"}` + label("Email") +
+		`{"urlValue":{"$case":"url","url":"mailto:ada@example.com"},"children":["ada@example.com"]}` +
+		`{"viewName":"contact-website"}` + label("Website") +
+		`{"urlValue":{"$case":"url","url":"https://www.linkedin.com/safety/go?url=https%3A%2F%2Fada.example&trk=x"},"children":["ada.example"]}` +
+		`{"viewName":"contact-birthday"}` + label("Birthday") + `{"children":["December 10"]}` +
+		label("Connected since") + `{"children":["1 Jan 2020"]}` +
+		`{"viewName":"premium-upsell-card"}` + label("Try Premium") + `{"children":["upsell"]}`
+	info, err := ParseContactInfo([]byte(stream))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if info.Email != "ada@example.com" || len(info.Websites) != 1 || info.Websites[0] != "https://ada.example" ||
+		info.Birthday != "December 10" || info.ConnectedSince != "1 Jan 2020" || info.Other != nil {
 		t.Errorf("contact info %+v", info)
 	}
+	if _, err := ParseContactInfo([]byte(`<html>`)); err == nil {
+		t.Error("expected an error for an unknown answer")
+	}
 }
-
-func TestGetProfileFallsBackToTheClassicEndpoint(t *testing.T) {
+func TestGetProfileTriesTheShorterDecoration(t *testing.T) {
 	r := &routes{replies: map[string]string{
-		"/identity/profiles/ada-lovelace/profileView": doc(t, map[string]any{"*profile": "urn:li:fs_profile:ACoAAB"},
-			map[string]any{"$type": "com.linkedin.voyager.identity.profile.Profile", "entityUrn": "urn:li:fs_profile:ACoAAB", "firstName": "Ada"}),
+		"/identity/dash/profiles": doc(t, map[string]any{"*elements": []any{"urn:li:fsd_profile:ACoAAB"}},
+			map[string]any{"$type": "com.linkedin.voyager.dash.identity.profile.Profile", "entityUrn": "urn:li:fsd_profile:ACoAAB", "firstName": "Ada"}),
 	}}
-	// The dash endpoint is not in the routes, so it fails like a removed endpoint would.
+	// The first decoration fails like a retired one would.
 	gone := &goneFirst{routes: r}
 	p, err := GetProfile(context.Background(), gone, ProfileRef{PublicID: "ada-lovelace"})
 	if err != nil || p.FirstName != "Ada" {
 		t.Fatalf("profile %+v, %v", p, err)
 	}
-	if len(r.calls) != 2 || r.calls[0].path != "/identity/dash/profiles" || r.calls[0].param("memberIdentity") != "ada-lovelace" {
+	if len(r.calls) != 2 || r.calls[0].param("decorationId") != ProfileDecoration || r.calls[1].param("decorationId") != ProfileShortDecoration ||
+		r.calls[1].param("memberIdentity") != "ada-lovelace" {
 		t.Errorf("calls %+v", r.calls)
 	}
 }
-
 func TestProfilePostsLooksUpTheMember(t *testing.T) {
+	update := map[string]any{
+		"$type": "com.linkedin.voyager.dash.feed.Update", "entityUrn": "urn:li:fsd_update:(urn:li:activity:42,MEMBER_SHARES,EMPTY,DEFAULT,false)",
+		"actor":      map[string]any{"name": map[string]any{"text": "Ada Lovelace"}},
+		"commentary": map[string]any{"text": map[string]any{"text": "Engines!"}},
+	}
 	r := &routes{replies: map[string]string{
 		"/identity/dash/profiles": doc(t, map[string]any{"*elements": []any{"urn:li:fsd_profile:ACoAAB"}},
 			map[string]any{"$type": "com.linkedin.voyager.dash.identity.profile.Profile", "entityUrn": "urn:li:fsd_profile:ACoAAB", "firstName": "Ada", "publicIdentifier": "ada"}),
-		"/identity/profileUpdatesV2": string(pageOf(t, 1, 4)),
+		"/graphql": doc(t, map[string]any{"data": map[string]any{"feedDashProfileUpdatesByMemberShareFeed": map[string]any{
+			"*elements": []any{update["entityUrn"]}}}}, update),
 	}}
-	posts, err := ProfilePosts(context.Background(), r, ProfileRef{PublicID: "ada"}, 2)
-	if err != nil || len(posts) != 2 {
-		t.Fatalf("got %d posts, %v", len(posts), err)
+	posts, err := ProfilePosts(context.Background(), r, ProfileRef{PublicID: "ada"}, 1)
+	if err != nil || len(posts) != 1 || posts[0].Text != "Engines!" || posts[0].URN != "urn:li:activity:42" {
+		t.Fatalf("posts %+v, %v", posts, err)
 	}
-	if got := r.calls[1].param("profileUrn"); got != "urn:li:fsd_profile:ACoAAB" || r.calls[1].param("q") != "memberShareFeed" {
-		t.Errorf("profile updates asked for %q: %+v", got, r.calls[1])
+	vars := r.calls[1].param("variables")
+	if !strings.Contains(r.calls[1].param("queryId"), "voyagerFeedDashProfileUpdates.") ||
+		!strings.Contains(vars, "profileUrn:urn%3Ali%3Afsd_profile%3AACoAAB") {
+		t.Errorf("profile updates asked with %+v", r.calls[1].params)
 	}
 
 	r.calls = nil

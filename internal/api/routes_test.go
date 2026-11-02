@@ -63,6 +63,10 @@ func (r *routes) Delete(_ context.Context, path string, params voyager.Params) (
 	return r.reply("DELETE", path, params, nil)
 }
 
+func (r *routes) PostSDUI(_ context.Context, action string, params voyager.Params, payload any) ([]byte, error) {
+	return r.reply("SDUI", action, params, payload)
+}
+
 func (r *routes) last(t *testing.T) call {
 	t.Helper()
 	if len(r.calls) == 0 {

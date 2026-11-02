@@ -106,6 +106,15 @@ nav:
           - reference/lmw_profile_show.md
           - reference/lmw_profile_contact.md
           - reference/lmw_profile_posts.md
+          - reference/lmw_notifications.md
+          - reference/lmw_invitations.md
+          - reference/lmw_invitations_accept.md
+          - reference/lmw_invitations_ignore.md
+          - reference/lmw_invitations_sent.md
+          - reference/lmw_invitations_withdraw.md
+          - reference/lmw_connect.md
+          - reference/lmw_connections.md
+          - reference/lmw_connections_remove.md
           - reference/lmw_post.md
           - reference/lmw_post_draft.md
           - reference/lmw_post_preview.md

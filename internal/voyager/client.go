@@ -196,15 +196,40 @@ func (c *Client) Delete(ctx context.Context, path string, params Params) ([]byte
 	return c.Do(ctx, "DELETE", path, params, nil, NormalizedJSON)
 }
 
+// SDUIPrefix is where the web app's server-driven UI actions live. Some
+// pages (contact info, for one) are only served this way.
+const SDUIPrefix = "/flagship-web/rsc-action/actions/"
+
+// PostSDUI sends a server-driven UI action, such as "navigation", and returns
+// its answer: a React Server Components stream, not JSON.
+func (c *Client) PostSDUI(ctx context.Context, action string, params Params, payload any) ([]byte, error) {
+	target := c.origin + SDUIPrefix + action
+	if len(params) > 0 {
+		parts := make([]string, len(params))
+		for i, p := range params {
+			parts[i] = url.QueryEscape(p.Key) + "=" + escapeValue(p.Value)
+		}
+		target += "?" + strings.Join(parts, "&")
+	}
+	return c.send(ctx, "POST", target, payload, "*/*", false)
+}
+
 // Do sends one paced request.
 func (c *Client) Do(ctx context.Context, method, path string, params Params, payload any, accept string) ([]byte, error) {
-	if err := c.session.Validate(); err != nil {
-		return nil, err
-	}
 	target, err := BuildURL(c.origin, path, params)
 	if err != nil {
 		return nil, err
 	}
+	return c.send(ctx, method, target, payload, accept, true)
+}
+
+// send sends one paced request to target; wantJSON rejects answers that are
+// not JSON.
+func (c *Client) send(ctx context.Context, method, target string, payload any, accept string, wantJSON bool) ([]byte, error) {
+	if err := c.session.Validate(); err != nil {
+		return nil, err
+	}
+	var err error
 	var body []byte
 	if payload != nil {
 		if body, err = json.Marshal(payload); err != nil {
@@ -238,7 +263,7 @@ func (c *Client) Do(ctx context.Context, method, path string, params Params, pay
 	}
 	slog.Debug("voyager response", "status", resp.StatusCode, "bytes", len(raw))
 	c.absorbCookies(resp)
-	return c.handle(resp, raw, target)
+	return c.handle(resp, raw, target, wantJSON)
 }
 
 func (c *Client) headers(accept string, hasBody bool) http.Header {
@@ -330,7 +355,7 @@ func (c *Client) absorbCookies(resp *http.Response) {
 	}
 }
 
-func (c *Client) handle(resp *http.Response, raw []byte, target string) ([]byte, error) {
+func (c *Client) handle(resp *http.Response, raw []byte, target string, wantJSON bool) ([]byte, error) {
 	status := resp.StatusCode
 	location := strings.ToLower(resp.Header.Get("Location"))
 	lowered := strings.ToLower(string(raw))
@@ -362,6 +387,9 @@ func (c *Client) handle(resp *http.Response, raw []byte, target string) ([]byte,
 		return nil, &errs.Error{Kind: errs.API, Err: &errs.HTTPError{Status: status, URL: target, Snippet: snippet}}
 	}
 
+	if !wantJSON {
+		return raw, nil
+	}
 	if len(bytes.TrimSpace(raw)) == 0 {
 		return []byte("{}"), nil
 	}

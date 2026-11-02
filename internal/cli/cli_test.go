@@ -497,8 +497,9 @@ func TestProfileCommands(t *testing.T) {
 	h := newHarness(t)
 	h.importPasted()
 	h.linkedin.replies["/identity/dash/profiles"] = reply{status: 200, body: dashProfileJSON}
-	h.linkedin.replies["/identity/profileUpdatesV2"] = reply{status: 200, body: feedJSON}
-	h.linkedin.replies["/identity/profiles/grace/profileContactInfo"] = reply{status: 200, body: `{"data":{"emailAddress":"grace@example.com"},"included":[]}`}
+	h.linkedin.replies["/graphql"] = reply{status: 200, body: feedJSON}
+	h.linkedin.replies["/flagship-web/rsc-action/actions/navigation"] = reply{status: 200, body: `1:{"viewName":"profile-contact-info-details-view"}` +
+		`{"viewName":"contact-email"}["$","p",null,{"className":"x","children":["Email"]}]{"urlValue":{"$case":"url","url":"mailto:grace@example.com"}}`}
 
 	out := h.mustRun("", "profile", "show", "https://www.linkedin.com/in/grace/")
 	for _, want := range []string{"Grace Hopper", "Rear admiral", "Programmer · Harvard", "1944 – present", "COBOL"} {
@@ -518,5 +519,46 @@ func TestProfileCommands(t *testing.T) {
 	}
 	if code, _, stderr := h.run("", "profile", "show", "not a profile"); code != 2 || !strings.Contains(stderr, "not a LinkedIn profile") {
 		t.Errorf("bad profile: exit %d, %s", code, stderr)
+	}
+}
+
+const invitationsJSON = `{"data":{"*elements":["urn:li:fs_relInvitationView:1"]},"included":[` +
+	`{"entityUrn":"urn:li:fs_relInvitationView:1","*invitation":"urn:li:fs_relInvitation:7001"},` +
+	`{"entityUrn":"urn:li:fs_relInvitation:7001","sharedSecret":"s3cret","message":"Hi!","*fromMember":"urn:li:fs_miniProfile:ACoAAG"},` +
+	`{"entityUrn":"urn:li:fs_miniProfile:ACoAAG","firstName":"Grace","lastName":"Hopper","publicIdentifier":"grace"}]}`
+
+func TestInvitationsAndConnections(t *testing.T) {
+	h := newHarness(t)
+	h.importPasted()
+	h.linkedin.replies["/relationships/invitationViews"] = reply{status: 200, body: invitationsJSON}
+	h.linkedin.replies["/relationships/invitations/7001"] = reply{status: 200, body: `{}`}
+	h.linkedin.replies["/identity/dash/profiles"] = reply{status: 200, body: dashProfileJSON}
+	h.linkedin.replies["/voyagerRelationshipsDashMemberRelationships"] = reply{status: 200, body: `{}`}
+
+	if out := h.mustRun("", "invitations"); !strings.Contains(out, "Grace Hopper") || !strings.Contains(out, "id 7001") || !strings.Contains(out, "Hi!") {
+		t.Errorf("invitations: %s", out)
+	}
+	before := len(h.linkedin.requests)
+	if h.mustRun("no\n", "invitations", "accept", "7001"); len(h.linkedin.requests) != before+1 {
+		t.Errorf("a cancelled accept may only read the list: %d requests", len(h.linkedin.requests)-before)
+	}
+	out := h.mustRun("accept\n", "invitations", "accept", "7001")
+	if !strings.Contains(out, "Accepted the invitation from Grace Hopper") {
+		t.Errorf("accept: %s", out)
+	}
+	if last := h.linkedin.bodies[len(h.linkedin.bodies)-1]; !strings.Contains(last, `"invitationSharedSecret":"s3cret"`) {
+		t.Errorf("accept payload %s", last)
+	}
+
+	before = len(h.linkedin.requests)
+	if _, out, _ := h.run("no\n", "connect", "grace", "--note", "Hello"); !strings.Contains(out, "Hello") || len(h.linkedin.requests) != before {
+		t.Errorf("a cancelled connect sent requests or did not show the note: %s", out)
+	}
+	h.mustRun("connect\n", "connect", "grace", "--note", "Hello")
+	if last := h.linkedin.bodies[len(h.linkedin.bodies)-1]; !strings.Contains(last, `"memberProfile":"urn:li:fsd_profile:ACoAAB"`) {
+		t.Errorf("connect payload %s", last)
+	}
+	if code, _, _ := h.run("", "connect", "grace", "--note", strings.Repeat("x", 301)); code != 1 {
+		t.Errorf("a long note should fail, exit %d", code)
 	}
 }

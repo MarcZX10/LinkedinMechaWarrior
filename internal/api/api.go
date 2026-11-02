@@ -21,6 +21,7 @@ type Client interface {
 	Get(ctx context.Context, path string, params voyager.Params) ([]byte, error)
 	Post(ctx context.Context, path string, params voyager.Params, payload any) ([]byte, error)
 	Delete(ctx context.Context, path string, params voyager.Params) ([]byte, error)
+	PostSDUI(ctx context.Context, action string, params voyager.Params, payload any) ([]byte, error)
 }
 
 const (
@@ -136,17 +137,11 @@ func paginatePosts(limit int, page func(start int) ([]byte, error)) ([]FeedPost,
 // ParseFeed returns the posts on one feed page and how many elements the page had.
 func ParseFeed(raw []byte) ([]FeedPost, int) {
 	doc := normalized.Parse(raw)
-	var updates []normalized.Object
-	elements := 0
-	if urns, ok := doc.Data["*elements"].([]any); ok {
-		elements = len(urns)
-		for _, urn := range urns {
-			if update := doc.Get(urn); update != nil {
-				updates = append(updates, update)
-			}
-		}
-	} else {
-		updates = doc.OfType("UpdateV2")
+	// REST feeds list updates in data; GraphQL ones (profile posts) in
+	// data.data.<query>. Older answers only have them in included.
+	updates, elements, coll := collection(doc)
+	if coll == nil {
+		updates = append(doc.OfType("UpdateV2"), doc.OfType("feed.Update")...)
 		elements = len(updates)
 	}
 
@@ -192,7 +187,8 @@ func parseUpdate(doc *normalized.Doc, update normalized.Object) (FeedPost, bool)
 	post.Comments = intPtr(counts["numComments"])
 	post.Reposts = intPtr(counts["numShares"])
 
-	for _, candidate := range []any{normalized.Dig(update, "updateMetadata", "urn"), update["entityUrn"], update["urn"]} {
+	for _, candidate := range []any{normalized.Dig(update, "updateMetadata", "urn"), normalized.Dig(update, "metadata", "backendUrn"),
+		update["entityUrn"], update["urn"]} {
 		if match := activityURN.FindString(normalized.String(candidate)); match != "" {
 			post.URN = match
 			post.URL = "https://www.linkedin.com/feed/update/" + match + "/"
