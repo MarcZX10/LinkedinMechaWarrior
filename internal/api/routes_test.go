@@ -67,6 +67,11 @@ func (r *routes) PostSDUI(_ context.Context, action string, params voyager.Param
 	return r.reply("SDUI", action, params, payload)
 }
 
+func (r *routes) Upload(_ context.Context, target, contentType string, headers map[string]string, file []byte) error {
+	r.calls = append(r.calls, call{method: "PUT", path: target, payload: map[string]any{"content-type": contentType, "headers": headers, "bytes": len(file)}})
+	return nil
+}
+
 func (r *routes) last(t *testing.T) call {
 	t.Helper()
 	if len(r.calls) == 0 {

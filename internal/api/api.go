@@ -22,6 +22,7 @@ type Client interface {
 	Post(ctx context.Context, path string, params voyager.Params, payload any) ([]byte, error)
 	Delete(ctx context.Context, path string, params voyager.Params) ([]byte, error)
 	PostSDUI(ctx context.Context, action string, params voyager.Params, payload any) ([]byte, error)
+	Upload(ctx context.Context, target, contentType string, headers map[string]string, file []byte) error
 }
 
 const (

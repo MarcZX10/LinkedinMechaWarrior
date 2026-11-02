@@ -214,6 +214,58 @@ func (c *Client) PostSDUI(ctx context.Context, action string, params Params, pay
 	return c.send(ctx, "POST", target, payload, "*/*", false)
 }
 
+// Upload PUTs a file to an upload address LinkedIn handed out, with the
+// headers it asked for. Only LinkedIn hosts are accepted, and the session
+// cookies only go to LinkedIn's own origin.
+func (c *Client) Upload(ctx context.Context, target, contentType string, headers map[string]string, file []byte) error {
+	u, err := url.Parse(target)
+	if err != nil || u.Scheme != "https" && !strings.HasPrefix(target, c.origin+"/") {
+		return errs.New(errs.API, "LinkedIn gave an upload address lmw does not trust: %q", target)
+	}
+	host := strings.ToLower(u.Hostname())
+	own := strings.HasPrefix(target, c.origin+"/")
+	if !own && host != "linkedin.com" && !strings.HasSuffix(host, ".linkedin.com") {
+		return errs.New(errs.API, "LinkedIn gave an upload address outside linkedin.com: %q", target)
+	}
+	if err := c.session.Validate(); err != nil {
+		return err
+	}
+	req, err := http.NewRequestWithContext(ctx, "PUT", target, bytes.NewReader(file))
+	if err != nil {
+		return err
+	}
+	if own {
+		req.Header = c.headers("*/*", true)
+		delete(req.Header, "origin")
+	} else {
+		req.Header = http.Header{"user-agent": {c.identity.UserAgent}}
+	}
+	req.Header["content-type"] = []string{contentType}
+	for name, value := range headers {
+		req.Header[strings.ToLower(name)] = []string{value}
+	}
+	req.ContentLength = int64(len(file))
+
+	if err := c.pacer.BeforeRequest(); err != nil {
+		return err
+	}
+	if err := c.pacer.RecordRequest(); err != nil {
+		return err
+	}
+	slog.Debug("voyager upload", "url", target, "bytes", len(file))
+	resp, err := c.doer.Do(req)
+	if err != nil {
+		return errs.Wrap(errs.API, err, "uploading to %s failed: %v", u.Host, err)
+	}
+	defer resp.Body.Close()
+	raw, _ := io.ReadAll(io.LimitReader(resp.Body, maxResponseBytes))
+	if own {
+		c.absorbCookies(resp)
+	}
+	_, err = c.handle(resp, raw, target, false)
+	return err
+}
+
 // Do sends one paced request.
 func (c *Client) Do(ctx context.Context, method, path string, params Params, payload any, accept string) ([]byte, error) {
 	target, err := BuildURL(c.origin, path, params)

@@ -296,6 +296,9 @@ func Comments(comments []api.Comment) string {
 		if c.Replies != nil && *c.Replies > 0 {
 			stats = append(stats, fmt.Sprintf("%d replies", *c.Replies))
 		}
+		if c.URN != "" {
+			stats = append(stats, c.URN)
+		}
 		if len(stats) > 0 {
 			lines = append(lines, "  "+strings.Join(stats, " · "))
 		}

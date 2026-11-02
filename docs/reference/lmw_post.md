@@ -24,10 +24,12 @@ Write, publish, read and react to posts
 * [lmw post comments](lmw_post_comments.md)	 - Show the most relevant comments on a post
 * [lmw post delete](lmw_post_delete.md)	 - Delete one of your posts (asks for confirmation)
 * [lmw post draft](lmw_post_draft.md)	 - Build a post outline from an idea (offline)
+* [lmw post edit](lmw_post_edit.md)	 - Replace the text of one of your posts (asks for confirmation)
 * [lmw post preview](lmw_post_preview.md)	 - Preview a post and check that it can be published (offline)
-* [lmw post publish](lmw_post_publish.md)	 - Publish a text post (asks for confirmation)
-* [lmw post react](lmw_post_react.md)	 - React to a post (asks for confirmation)
+* [lmw post publish](lmw_post_publish.md)	 - Publish a post, with images, a video, a document or a poll (asks for confirmation)
+* [lmw post react](lmw_post_react.md)	 - React to a post or a comment (asks for confirmation)
 * [lmw post reactions](lmw_post_reactions.md)	 - Show who reacted to a post, and how
+* [lmw post reply](lmw_post_reply.md)	 - Reply to a comment (asks for confirmation)
 * [lmw post show](lmw_post_show.md)	 - Show a post and its most relevant comments
-* [lmw post unreact](lmw_post_unreact.md)	 - Remove your reaction from a post (asks for confirmation)
+* [lmw post unreact](lmw_post_unreact.md)	 - Remove your reaction from a post or a comment (asks for confirmation)
 

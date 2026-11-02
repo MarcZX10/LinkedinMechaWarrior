@@ -2,7 +2,7 @@
 
 # lmw post react
 
-React to a post (asks for confirmation)
+React to a post or a comment (asks for confirmation)
 
 ```
 lmw post react POST [flags]

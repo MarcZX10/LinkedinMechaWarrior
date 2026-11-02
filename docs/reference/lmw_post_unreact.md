@@ -2,7 +2,7 @@
 
 # lmw post unreact
 
-Remove your reaction from a post (asks for confirmation)
+Remove your reaction from a post or a comment (asks for confirmation)
 
 ```
 lmw post unreact POST [flags]

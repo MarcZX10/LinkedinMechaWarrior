@@ -175,6 +175,10 @@ func (f *fakeClient) PostSDUI(context.Context, string, voyager.Params, any) ([]b
 	return f.response, nil
 }
 
+func (f *fakeClient) Upload(context.Context, string, string, map[string]string, []byte) error {
+	return nil
+}
+
 func pageOf(t *testing.T, from, to int) []byte {
 	var updates []update
 	for i := from; i < to; i++ {
@@ -219,7 +223,7 @@ func TestFeedValidatesLimit(t *testing.T) {
 
 func TestPublishSendsTextAndVisibility(t *testing.T) {
 	c := &fakeClient{response: []byte(`{"data":{"status":{"urn":"urn:li:share:5","toastCtaText":"View post"},"*updateV2":"urn:li:fs_updateV2:(urn:li:activity:9,FEED_DETAIL)"}}`)}
-	post, err := Publish(context.Background(), c, "Hello", ConnectionsOnly)
+	post, err := Publish(context.Background(), c, "Hello", ConnectionsOnly, PostOptions{})
 	if err != nil {
 		t.Fatal(err)
 	}

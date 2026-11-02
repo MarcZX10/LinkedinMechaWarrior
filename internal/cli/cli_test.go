@@ -700,7 +700,7 @@ func TestMCPOffersEveryFeature(t *testing.T) {
 		"get_my_profile", "get_feed", "get_profile", "get_profile_posts", "get_contact_info", "get_post", "get_post_comments",
 		"get_post_reactions", "list_conversations", "get_conversation", "get_notifications", "list_invitations", "list_connections",
 		"search", "get_company", "search_jobs", "get_job", "get_request_budget", "linkedin_api_get",
-		"publish_post", "comment_on_post", "react_to_post", "remove_reaction", "delete_post", "send_message", "mark_conversation_read",
+		"publish_post", "edit_post", "comment_on_post", "reply_to_comment", "react_to_post", "remove_reaction", "delete_post", "send_message", "mark_conversation_read",
 		"answer_invitation", "withdraw_invitation", "send_connection_request", "remove_connection", "set_following",
 	} {
 		if !names[want] {

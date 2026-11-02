@@ -29,6 +29,7 @@ Start with `lmw auth import`.
 * [lmw company](lmw_company.md)	 - Look at and follow companies and schools
 * [lmw connect](lmw_connect.md)	 - Send a connection request (asks for confirmation)
 * [lmw connections](lmw_connections.md)	 - List your connections, most recently added first
+* [lmw doctor](lmw_doctor.md)	 - Check that lmw is ready to fly
 * [lmw feed](lmw_feed.md)	 - Show your home feed
 * [lmw har](lmw_har.md)	 - Inspect HAR files recorded in your browser
 * [lmw identity](lmw_identity.md)	 - Show or change which browser lmw presents itself as

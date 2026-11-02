@@ -2,11 +2,16 @@
 
 # lmw post publish
 
-Publish a text post (asks for confirmation)
+Publish a post, with images, a video, a document or a poll (asks for confirmation)
 
 ### Synopsis
 
-Publish a text post after showing it and asking you to type 'publish'.
+Publish a post after showing it and asking you to type 'publish'.
+
+A post can carry images, a video, a PDF document, a poll or the card of the
+first link in its text (one of these), and can be scheduled with --at:
+LinkedIn then publishes it at that time. Files are uploaded after you
+confirm; nothing is posted if an upload fails.
 
 If LinkedIn rejects the request, its API for creating posts may have changed:
 publish one post from the website while recording a HAR, then check it with
@@ -16,13 +21,33 @@ publish one post from the website while recording a HAR, then check it with
 lmw post publish [flags]
 ```
 
+### Examples
+
+```
+  lmw post publish --text-file post.txt
+  lmw post publish --text "Our new engine" --image engine.png --alt "The engine, front view"
+  lmw post publish --text "Slides from my talk" --document talk.pdf --title "Engines 101"
+  lmw post publish --text "Settle this" --poll "Tabs or spaces?" --option Tabs --option Spaces --duration 3d
+  lmw post publish --text-file post.txt --at "2026-11-05 09:30"
+```
+
 ### Options
 
 ```
-      --connections-only   only your connections can see the post
-  -h, --help               help for publish
-      --text string        post text
-      --text-file string   file with the post text
+      --alt stringArray      describe the images for screen readers, in the same order (repeatable)
+      --at string            schedule the post for this local time, e.g. "2026-11-05 09:30"
+      --connections-only     only your connections can see the post
+      --document string      attach a PDF, shown as a swipeable document
+      --duration string      how long the poll runs: 1d, 3d, 1w, 2w (default "1w")
+  -h, --help                 help for publish
+      --image stringArray    attach an image: png, jpg, gif or webp (repeatable, up to 20)
+      --link-preview         show the card of the first link in the text
+      --option stringArray   a poll option (repeatable, 2 to 4)
+      --poll string          add a poll with this question
+      --text string          post text
+      --text-file string     file with the post text
+      --title string         the title of the document (required with --document)
+      --video string         attach a video: mp4 or mov
 ```
 
 ### Options inherited from parent commands

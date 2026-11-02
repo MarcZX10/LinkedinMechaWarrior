@@ -4,12 +4,15 @@ import (
 	"context"
 	"regexp"
 	"strings"
+	"time"
 )
 
 // PublishedPost identifies a post created by Publish.
 type PublishedPost struct {
 	URN string `json:"urn,omitempty"`
 	URL string `json:"url,omitempty"`
+	// Scheduled is when LinkedIn will publish a scheduled post.
+	Scheduled string `json:"scheduled_for,omitempty"`
 }
 
 // Visibility controls who can see a new post.
@@ -22,30 +25,22 @@ const (
 	ConnectionsOnly
 )
 
-// SharePayload builds the body LinkedIn's web app sends to create a text post.
-func SharePayload(text string, visibility Visibility) map[string]any {
-	return map[string]any{
-		"visibleToConnectionsOnly":  visibility == ConnectionsOnly,
-		"externalAudienceProviders": []any{},
-		"commentaryV2": map[string]any{
-			"text":       text,
-			"attributes": []any{},
-		},
-		"origin":                 "FEED",
-		"allowedCommentersScope": "ALL",
-		"postState":              "PUBLISHED",
-		"media":                  []any{},
-	}
-}
-
-// Publish creates a text post. The caller is responsible for getting the
-// user's confirmation first.
-func Publish(ctx context.Context, c Client, text string, visibility Visibility) (PublishedPost, error) {
-	raw, err := c.Post(ctx, "/contentcreation/normShares", nil, SharePayload(text, visibility))
+// Publish creates a post, after uploading its attachments or creating its
+// poll. The caller is responsible for getting the user's confirmation first.
+func Publish(ctx context.Context, c Client, text string, visibility Visibility, opts PostOptions) (PublishedPost, error) {
+	media, err := prepareMedia(ctx, c, text, opts)
 	if err != nil {
 		return PublishedPost{}, err
 	}
-	return ParsePublished(raw), nil
+	raw, err := c.Post(ctx, "/contentcreation/normShares", nil, SharePayload(text, visibility, media, opts.At))
+	if err != nil {
+		return PublishedPost{}, err
+	}
+	post := ParsePublished(raw)
+	if !opts.At.IsZero() {
+		post.Scheduled = opts.At.Format(time.RFC3339)
+	}
+	return post, nil
 }
 
 var postURN = regexp.MustCompile(`urn:li:(?:activity|share|ugcPost):\d+`)

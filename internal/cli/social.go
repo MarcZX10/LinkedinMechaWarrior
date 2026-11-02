@@ -113,11 +113,11 @@ func (a *app) postReactCommand() *cobra.Command {
 	var reaction string
 	cmd := &cobra.Command{
 		Use:     "react POST",
-		Short:   "React to a post (asks for confirmation)",
+		Short:   "React to a post or a comment (asks for confirmation)",
 		Example: "  lmw post react urn:li:activity:7123456789012345678 --type celebrate",
-		Args:    exactArgs(1, postArgHelp),
+		Args:    exactArgs(1, postArgHelp+", or a comment URN"),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			urn, err := api.ParsePost(args[0])
+			urn, err := api.ParseThread(args[0])
 			if err != nil {
 				return err
 			}
@@ -141,10 +141,10 @@ func (a *app) postReactCommand() *cobra.Command {
 func (a *app) postUnreactCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:   "unreact POST",
-		Short: "Remove your reaction from a post (asks for confirmation)",
-		Args:  exactArgs(1, postArgHelp),
+		Short: "Remove your reaction from a post or a comment (asks for confirmation)",
+		Args:  exactArgs(1, postArgHelp+", or a comment URN"),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			urn, err := api.ParsePost(args[0])
+			urn, err := api.ParseThread(args[0])
 			if err != nil {
 				return err
 			}
@@ -267,14 +267,14 @@ func (a *app) mcpSocialTools() []mcp.Tool {
 		{
 			Name:        "react_to_post",
 			Title:       "React to a post",
-			Description: "Add the person's reaction to a post.",
+			Description: "Add the person's reaction to a post, or to a comment given by its URN from get_post_comments.",
 			Params: []mcp.Param{postParam,
 				{Name: "reaction", Type: "string", Description: "which reaction", Enum: api.ReactionNames, Default: "like"}},
 			Confirm: func(args mcp.Args) (string, error) {
 				return fmt.Sprintf("React %q to the LinkedIn post %s?", args.String("reaction"), args.String("post")), nil
 			},
 			Run: func(ctx context.Context, args mcp.Args) (any, error) {
-				urn, err := parsePost(args)
+				urn, err := api.ParseThread(args.String("post"))
 				if err != nil {
 					return nil, err
 				}
@@ -287,13 +287,13 @@ func (a *app) mcpSocialTools() []mcp.Tool {
 		{
 			Name:        "remove_reaction",
 			Title:       "Remove a reaction",
-			Description: "Remove the person's reaction from a post.",
+			Description: "Remove the person's reaction from a post or a comment.",
 			Params:      []mcp.Param{postParam},
 			Confirm: func(args mcp.Args) (string, error) {
 				return "Remove your reaction from the LinkedIn post " + args.String("post") + "?", nil
 			},
 			Run: func(ctx context.Context, args mcp.Args) (any, error) {
-				urn, err := parsePost(args)
+				urn, err := api.ParseThread(args.String("post"))
 				if err != nil {
 					return nil, err
 				}
@@ -323,6 +323,33 @@ func (a *app) mcpSocialTools() []mcp.Tool {
 					return nil, err
 				}
 				return map[string]any{"post": urn, "comment": comment}, nil
+			},
+		},
+		{
+			Name:  "reply_to_comment",
+			Title: "Reply to a comment",
+			Description: "Reply to a comment as the person; the comment is given by its URN from get_post_comments. " +
+				"Show the person the exact text first. If LinkedIn reports an error, check the post before trying again.",
+			Params: []mcp.Param{
+				{Name: "comment", Type: "string", Required: true, Description: "the comment's URN, urn:li:fsd_comment:(...)"},
+				{Name: "text", Type: "string", Required: true, Description: fmt.Sprintf("the reply, at most %d characters", api.MaxComment)},
+			},
+			Confirm: func(args mcp.Args) (string, error) {
+				return "Post this reply to " + args.String("comment") + "?\n\n" + args.String("text"), nil
+			},
+			Run: func(ctx context.Context, args mcp.Args) (any, error) {
+				thread, err := api.ParseThread(args.String("comment"))
+				if err != nil {
+					return nil, err
+				}
+				if !api.IsComment(thread) {
+					return nil, errUsage("%s is a post; use comment_on_post", thread)
+				}
+				reply, err := fetch(a, func(c *voyager.Client) (string, error) { return api.CommentOn(ctx, c, thread, args.String("text")) })
+				if err != nil {
+					return nil, err
+				}
+				return map[string]any{"comment": thread, "reply": reply}, nil
 			},
 		},
 		{

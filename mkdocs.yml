@@ -137,10 +137,12 @@ nav:
           - reference/lmw_post_comments.md
           - reference/lmw_post_delete.md
           - reference/lmw_post_draft.md
+          - reference/lmw_post_edit.md
           - reference/lmw_post_preview.md
           - reference/lmw_post_publish.md
           - reference/lmw_post_react.md
           - reference/lmw_post_reactions.md
+          - reference/lmw_post_reply.md
           - reference/lmw_post_show.md
           - reference/lmw_post_unreact.md
           - reference/lmw_messages.md
@@ -154,6 +156,7 @@ nav:
           - reference/lmw_invitations_sent.md
           - reference/lmw_invitations_withdraw.md
           - reference/lmw_connect.md
+          - reference/lmw_doctor.md
           - reference/lmw_connections.md
           - reference/lmw_connections_remove.md
           - reference/lmw_search.md
