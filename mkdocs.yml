@@ -178,6 +178,7 @@ nav:
           - reference/lmw_company.md
           - reference/lmw_company_follow.md
           - reference/lmw_company_show.md
+          - reference/lmw_company_posts.md
           - reference/lmw_company_unfollow.md
           - reference/lmw_jobs.md
           - reference/lmw_jobs_search.md

@@ -14,6 +14,7 @@ you through the channels of `lmw notify`.
 
 Kinds of watches:
   posts          new posts by a member (TARGET: a profile (linkedin.com/in/NAME))
+  company        new posts by a company or school page (TARGET: a page (linkedin.com/company/NAME))
   profile        changes to a member's headline or current job (TARGET: a profile (linkedin.com/in/NAME))
   comments       new comments on a post (TARGET: a post (its link or URN))
   jobs           new job postings for a search (TARGET: the search keywords)

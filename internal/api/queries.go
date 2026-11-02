@@ -33,6 +33,11 @@ var (
 		Name: "voyagerSearchDashClusters", Vars: []string{"start", "origin", "query"}, Optional: []string{"count"},
 		Hashes: []string{"b0928897b71bd00a5a7291755dcd64f0", "e438ab99259203e9c1cd3f358e217282", "9a78a658089851e133c5b7bb2b4baee5"},
 	}
+	organizationUpdatesQuery = Query{
+		Name: "voyagerFeedDashOrganizationalPageUpdates", Vars: []string{"count", "start", "moduleKey", "organizationalPageUrn"},
+		Optional: []string{"paginationToken"},
+		Hashes:   []string{"22f65769d754b16c73f7c9d9a8d2fd46", "827e11d165078dd7a5afaf1cba734121"},
+	}
 	conversationsQuery = Query{
 		Name: "messengerConversations", Messaging: true, Vars: []string{"query", "count", "mailboxUrn"}, Optional: []string{"nextCursor"},
 		Hashes: []string{"9501074288a12f3ae9e3c7ea243bccbf"},
@@ -46,5 +51,5 @@ var (
 // Queries lists the GraphQL queries lmw uses.
 func Queries() []Query {
 	return []Query{profileUpdatesQuery, updateQuery, commentsQuery, reactionsQuery, reactQuery, unreactQuery,
-		searchQuery, peopleTypeaheadQuery, savedItemsQuery, conversationsQuery, messagesQuery, pollQuery, urlPreviewQuery, mailboxCountsQuery}
+		searchQuery, peopleTypeaheadQuery, savedItemsQuery, conversationsQuery, messagesQuery, pollQuery, urlPreviewQuery, mailboxCountsQuery, organizationUpdatesQuery}
 }

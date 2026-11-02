@@ -100,6 +100,32 @@ func ParseCompanyPage(raw []byte, name string) (Company, error) {
 	return company, nil
 }
 
+// CompanyID returns the number LinkedIn knows a company or school page by
+// (one request).
+func CompanyID(ctx context.Context, c Client, name string) (string, error) {
+	company, err := GetCompany(ctx, c, name)
+	if err != nil {
+		return "", err
+	}
+	id := strings.TrimPrefix(company.URN, "urn:li:fsd_company:")
+	if id == "" || strings.Contains(id, ":") {
+		return "", errs.New(errs.API, "LinkedIn did not say which page %q is; inspect it with `lmw company show %s --json`", name, name)
+	}
+	return id, nil
+}
+
+// CompanyPosts returns the latest posts of a company or school page, as
+// its Posts tab shows them, from the page's id (see CompanyID).
+func CompanyPosts(ctx context.Context, c Client, id string, limit int) ([]FeedPost, error) {
+	if limit < 1 || limit > MaxFeedPosts {
+		return nil, errs.New(errs.Usage, "--limit must be between 1 and %d", MaxFeedPosts)
+	}
+	page := restliValue("urn:li:fsd_organizationalPage:" + id)
+	return paginatePosts(limit, func(start int) ([]byte, error) {
+		return organizationUpdatesQuery.Get(ctx, c, fmt.Sprintf("(count:%d,start:%d,moduleKey:ORGANIZATION_MEMBER_FEED_DESKTOP,organizationalPageUrn:%s)", FeedPageSize, start, page))
+	})
+}
+
 // companyURN turns the company URN of a company page into the dash form
 // that following uses: urn:li:fsd_company:ID.
 func companyURN(urn string) string {

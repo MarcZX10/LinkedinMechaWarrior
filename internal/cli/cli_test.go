@@ -723,7 +723,7 @@ func TestMCPOffersEveryFeature(t *testing.T) {
 	for _, want := range []string{
 		"get_my_profile", "get_feed", "get_profile", "get_profile_posts", "get_contact_info", "get_post", "get_post_comments",
 		"get_post_reactions", "list_conversations", "get_conversation", "get_notifications", "get_unread_counts", "get_profile_views", "list_invitations", "list_connections",
-		"search", "get_company", "search_jobs", "get_job", "get_saved_posts", "get_tracked_jobs", "get_request_budget", "linkedin_api_get",
+		"search", "get_company", "get_company_posts", "search_jobs", "get_job", "get_saved_posts", "get_tracked_jobs", "get_request_budget", "linkedin_api_get",
 		"publish_post", "edit_post", "comment_on_post", "reply_to_comment", "react_to_post", "remove_reaction", "delete_post", "send_message", "mark_conversation_read",
 		"answer_invitation", "withdraw_invitation", "send_connection_request", "remove_connection", "set_following",
 	} {

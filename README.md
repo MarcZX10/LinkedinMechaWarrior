@@ -150,7 +150,7 @@ flowchart LR
     armor ==> li[(LinkedIn)]
 ```
 
-- **43 tools**: unread counts, who viewed your profile, feed, profiles, posts with images and polls, comments and
+- **44 tools**: unread counts, who viewed your profile, feed, company posts, profiles, posts with images and polls, comments and
   replies, reactions, messages, notifications, invitations, connections,
   search, companies, jobs and your job tracker, saved posts, budgets, and
   watches that notify you later.

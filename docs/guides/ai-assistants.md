@@ -93,7 +93,7 @@ Even then, nothing is posted or sent behind your back:
 | `get_notifications` | Your notifications | |
 | `list_invitations`, `list_connections` | Connection requests and your connections | |
 | `search` | People, companies, schools or groups | |
-| `get_company` | A company or school page | |
+| `get_company`, `get_company_posts` | A company or school page, and its latest posts | |
 | `search_jobs`, `get_job`, `get_tracked_jobs` | Job search, postings and your job tracker | |
 | `get_saved_posts` | The posts you saved | |
 | `get_request_budget` | Requests used and any cooldown (sends nothing) | |

@@ -75,6 +75,35 @@ var Kinds = []Kind{
 		},
 	},
 	{
+		Name: "company", About: "new posts by a company or school page", Target: "a page (linkedin.com/company/NAME)", Cost: 1,
+		Prepare: func(ctx context.Context, c api.Client, w *Watch) error {
+			name, err := api.ParseCompany(w.Target)
+			if err != nil {
+				return err
+			}
+			id, err := api.CompanyID(ctx, c, name)
+			if err != nil {
+				return err
+			}
+			w.Target = name
+			w.Params["company_id"] = id
+			return nil
+		},
+		Check: func(ctx context.Context, c api.Client, w *Watch) ([]Item, error) {
+			posts, err := api.CompanyPosts(ctx, c, w.Params["company_id"], 5)
+			if err != nil {
+				return nil, err
+			}
+			var items []Item
+			for _, p := range posts {
+				if p.URN != "" && !p.Promoted {
+					items = append(items, Item{Key: p.URN, Title: "New post by " + firstNonEmpty(p.Author, w.Target), Text: clip(p.Text, 280), URL: p.URL})
+				}
+			}
+			return items, nil
+		},
+	},
+	{
 		Name: "profile", About: "changes to a member's headline or current job", Target: "a profile (linkedin.com/in/NAME)", Cost: 1,
 		Prepare: prepareProfile, Replace: true,
 		Check: func(ctx context.Context, c api.Client, w *Watch) ([]Item, error) {

@@ -27,6 +27,7 @@ COMPANY is the page address (linkedin.com/company/NAME or /school/NAME) or NAME.
 
 * [lmw](lmw.md)	 - A command-line client for LinkedIn
 * [lmw company follow](lmw_company_follow.md)	 - Follow a company or school (asks for confirmation)
+* [lmw company posts](lmw_company_posts.md)	 - Show the latest posts of a company or school page
 * [lmw company show](lmw_company_show.md)	 - Show a company or school page
 * [lmw company unfollow](lmw_company_unfollow.md)	 - Unfollow a company or school (asks for confirmation)
 

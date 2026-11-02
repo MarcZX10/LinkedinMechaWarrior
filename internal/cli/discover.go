@@ -87,7 +87,32 @@ func (a *app) companyCommand() *cobra.Command {
 			return nil
 		},
 	}
-	cmd.AddCommand(show, a.followCommand("company", true), a.followCommand("company", false))
+	var limit int
+	posts := &cobra.Command{
+		Use:     "posts COMPANY",
+		Short:   "Show the latest posts of a company or school page",
+		Example: "  lmw company posts anthropic -n 5",
+		Args:    exactArgs(1, "one company, such as anthropic"),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			name, err := api.ParseCompany(args[0])
+			if err != nil {
+				return err
+			}
+			found, err := fetch(a, func(c *voyager.Client) ([]api.FeedPost, error) {
+				id, err := api.CompanyID(cmd.Context(), c, name)
+				if err != nil {
+					return nil, err
+				}
+				return api.CompanyPosts(cmd.Context(), c, id, limit)
+			})
+			if err != nil {
+				return err
+			}
+			return a.printPosts(found, false, "No posts.")
+		},
+	}
+	limitFlag(posts, &limit, "posts", 5, api.MaxFeedPosts)
+	cmd.AddCommand(show, posts, a.followCommand("company", true), a.followCommand("company", false))
 	return cmd
 }
 
@@ -230,6 +255,28 @@ func (a *app) mcpDiscoverTools() []mcp.Tool {
 					return nil, err
 				}
 				return fetch(a, func(c *voyager.Client) (api.Company, error) { return api.GetCompany(ctx, c, name) })
+			},
+		},
+		{
+			Name:        "get_company_posts",
+			Title:       "Company posts",
+			Description: "The latest posts of a company or school page, newest first.",
+			ReadOnly:    true,
+			Params: []mcp.Param{{Name: "company", Type: "string", Required: true, Description: "the page address (linkedin.com/company/NAME) or NAME"},
+				limitParam("posts", 5, api.MaxFeedPosts)},
+			Run: func(ctx context.Context, args mcp.Args) (any, error) {
+				name, err := api.ParseCompany(args.String("company"))
+				if err != nil {
+					return nil, err
+				}
+				posts, err := fetch(a, func(c *voyager.Client) ([]api.FeedPost, error) {
+					id, err := api.CompanyID(ctx, c, name)
+					if err != nil {
+						return nil, err
+					}
+					return api.CompanyPosts(ctx, c, id, args.Int("limit"))
+				})
+				return listOf("posts", posts, err)
 			},
 		},
 		{

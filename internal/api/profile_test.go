@@ -156,3 +156,30 @@ func (g *goneFirst) Get(ctx context.Context, path string, params voyager.Params)
 	}
 	return g.routes.Get(ctx, path, params)
 }
+
+func TestCompanyPostsReadThePageFeed(t *testing.T) {
+	update := map[string]any{
+		"$type": "com.linkedin.voyager.dash.feed.Update", "entityUrn": "urn:li:fsd_update:(urn:li:activity:7,ORGANIZATION_MEMBER_FEED_DESKTOP,EMPTY,DEFAULT,false)",
+		"actor":      map[string]any{"name": map[string]any{"text": "Analytical Engines Ltd"}},
+		"commentary": map[string]any{"text": map[string]any{"text": "We are hiring"}},
+	}
+	r := &routes{replies: map[string]string{
+		"/organization/companies": doc(t, map[string]any{"*elements": []any{"urn:li:fs_normalized_company:1234"}},
+			map[string]any{"$type": "com.linkedin.voyager.organization.Company", "entityUrn": "urn:li:fs_normalized_company:1234", "name": "Analytical Engines Ltd", "universalName": "engines"}),
+		"/graphql": doc(t, map[string]any{"data": map[string]any{"feedDashOrganizationalPageUpdatesByOrganizationalPageRelevanceFeed": map[string]any{
+			"*elements": []any{update["entityUrn"]}}}}, update),
+	}}
+	id, err := CompanyID(context.Background(), r, "engines")
+	if err != nil || id != "1234" {
+		t.Fatalf("id %q, %v", id, err)
+	}
+	posts, err := CompanyPosts(context.Background(), r, id, 1)
+	if err != nil || len(posts) != 1 || posts[0].Text != "We are hiring" || posts[0].URN != "urn:li:activity:7" {
+		t.Fatalf("posts %+v, %v", posts, err)
+	}
+	vars := r.last(t).param("variables")
+	if !strings.HasPrefix(r.last(t).param("queryId"), "voyagerFeedDashOrganizationalPageUpdates.") ||
+		!strings.Contains(vars, "moduleKey:ORGANIZATION_MEMBER_FEED_DESKTOP,organizationalPageUrn:urn%3Ali%3Afsd_organizationalPage%3A1234") {
+		t.Errorf("page posts asked with %+v", r.last(t).params)
+	}
+}

@@ -78,17 +78,22 @@ Grace Hopper
 > schools, groups, `--network 2nd`/`3rd`, saved posts and the job tracker still
 > go through the search box query and may come back empty. If a search you know
 > should match finds nothing, `lmw doctor --probe` tells you whether search
-> works for your account. Recording a HAR while you search on the
-> website and running `lmw har inspect FILE --filter search` shows what the
-> website sends now.
+> works for your account. A HAR of the website won't show a fix: its search
+> results page comes ready made from LinkedIn's servers and calls no API
+> while you search.
 
 ## Companies and schools
 
 ```bash
 lmw company show https://www.linkedin.com/company/anthropic/
+lmw company posts anthropic -n 5
 lmw company follow anthropic
 lmw company unfollow anthropic
 ```
+
+`company posts` shows the latest posts of the page, as its Posts tab does,
+with two requests: one to find the page, one for its posts. To hear about
+new ones, add a [watch](watches.md): `lmw watch add company anthropic`.
 
 ## Jobs
 

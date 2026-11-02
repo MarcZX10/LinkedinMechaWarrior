@@ -62,6 +62,7 @@ lmw watch add comments https://www.linkedin.com/feed/update/urn:li:activity:7123
 | Kind | Tells you about | Target | Requests per check |
 |---|---|---|---|
 | `posts` | New posts and reposts by a member | A profile | 1 |
+| `company` | New posts by a company or school page | A page | 1 |
 | `profile` | Changes to a member's headline or current job | A profile | 1 |
 | `comments` | New comments on a post | A post | 1, or 2 for a repost |
 | `jobs` | New job postings for a search (`--location`, `--workplace`, `--posted`) | Keywords | 1 |

@@ -24,6 +24,8 @@
 
 ### Read
 
+- `company posts`: the latest posts of a company or school page (MCP:
+  `get_company_posts`; watch: `company`).
 - `profile views`: who viewed your profile lately, with LinkedIn's count of
   views (MCP: `get_profile_views`; watch: `views`).
 - `unread`: the unread badges of the top bar, with one request; `--folders`
