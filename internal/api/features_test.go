@@ -196,7 +196,7 @@ func TestSearch(t *testing.T) {
 		t.Fatalf("results %+v, %v", results, err)
 	}
 	vars := r.last(t).param("variables")
-	if !strings.Contains(vars, "keywords:grace%20hopper") || !strings.Contains(vars, "(key:network,value:List(F|S))") ||
+	if !strings.Contains(vars, "keywords:grace%20hopper") || !strings.Contains(vars, "(key:network,value:List(F,S))") ||
 		!strings.Contains(vars, "origin:FACETED_SEARCH") {
 		t.Errorf("search variables %s", vars)
 	}

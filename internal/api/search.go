@@ -73,7 +73,8 @@ func Search(ctx context.Context, c Client, kind, keywords string, opts SearchOpt
 			}
 			degrees = append(degrees, value)
 		}
-		parameters = append(parameters, "(key:network,value:List("+strings.Join(degrees, "|")+"))")
+		// A Rest.li list: List(F,S), not one "F|S" value.
+		parameters = append(parameters, "(key:network,value:List("+strings.Join(degrees, ",")+"))")
 	}
 	if keywords == "" && len(parameters) == 1 {
 		return nil, errs.New(errs.Usage, "give some keywords to search for")
