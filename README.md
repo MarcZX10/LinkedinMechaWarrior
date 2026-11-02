@@ -58,7 +58,8 @@ first sign of pushback from LinkedIn.
 
 ## ⚡ Launch sequence
 
-**1. Get the unit.** Download `lmw-linux` or `lmw.exe` from
+**1. Get the unit.** Download `lmw-linux`, `lmw.exe` or `lmw-macos-arm64`
+(also for Linux ARM and Intel Macs) from
 [Releases](https://github.com/MarcZX10/LinkedinMechaWarrior/releases/latest),
 or build it with Go:
 
@@ -199,6 +200,10 @@ through turning that into a new command.
 > `jobs tracked` still use the search box query and may come back empty. The writes follow payloads public clients verified live in 2026 and are
 > covered by `lmw`'s tests against a simulated LinkedIn. If something fails,
 > [Troubleshooting](docs/troubleshooting.md) says what to do.
+
+## 🗒️ Changelog
+
+What each version brought, and the known limits: [CHANGELOG.md](CHANGELOG.md).
 
 ## 📖 Pilot's manual
 

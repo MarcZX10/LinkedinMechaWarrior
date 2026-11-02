@@ -23,7 +23,10 @@ Go to the project's **Releases** page on GitHub and download one file:
 | Your system | File |
 |---|---|
 | Linux (x86_64) | `lmw-linux` |
+| Linux (ARM64) | `lmw-linux-arm64` |
 | Windows (x86_64) | `lmw.exe` |
+| macOS (Apple silicon) | `lmw-macos-arm64` |
+| macOS (Intel) | `lmw-macos-x86_64` |
 
 That single file is the whole program. There is nothing else to install.
 
@@ -56,9 +59,25 @@ Windows SmartScreen may warn about an unknown publisher the first time: choose
 </details>
 
 <details markdown="1">
-<summary><b>macOS, or building it yourself</b></summary>
+<summary><b>macOS: make it executable and allow it</b></summary>
 
-With [Go](https://go.dev/dl/) installed:
+```bash
+chmod +x lmw-macos-arm64
+mkdir -p ~/.local/bin
+mv lmw-macos-arm64 ~/.local/bin/lmw
+xattr -d com.apple.quarantine ~/.local/bin/lmw
+```
+
+The last line tells macOS you trust the download; without it, Gatekeeper
+refuses to open a program from an unidentified developer. Add `~/.local/bin`
+to your `PATH` if it isn't there.
+
+</details>
+
+<details markdown="1">
+<summary><b>Building it yourself</b></summary>
+
+With [Go](https://go.dev/dl/) installed, on any system:
 
 ```bash
 go install github.com/MarcZX10/LinkedinMechaWarrior/cmd/lmw@latest
@@ -73,7 +92,7 @@ lmw --version
 ```
 
 ```text
-lmw 0.4.0
+lmw 1.0.0
 ```
 
 ## Step 2. Log in to LinkedIn in your browser
