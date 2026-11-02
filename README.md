@@ -192,10 +192,11 @@ through turning that into a new command.
 > [!NOTE]
 > **Flight log, 2 November 2026.** `lmw doctor --probe` against a live account:
 > profile, feed, full profiles, notifications, invitations, connections,
-> messages, job search and company pages all answered and were read. Search
-> (`search`, and `saved` and `jobs tracked`, which use the same query) answered
-> 200 but empty for every query, so it needs a fresh capture of what the website
-> sends. The writes follow payloads public clients verified live in 2026 and are
+> messages, job search and company pages all answered and were read. LinkedIn's
+> search box query answered 200 but empty for every query, so `search people`
+> now finds people through the message composer's lookup, verified live the
+> same day; companies, schools, groups, 2nd/3rd-degree filters, `saved` and
+> `jobs tracked` still use the search box query and may come back empty. The writes follow payloads public clients verified live in 2026 and are
 > covered by `lmw`'s tests against a simulated LinkedIn. If something fails,
 > [Troubleshooting](docs/troubleshooting.md) says what to do.
 

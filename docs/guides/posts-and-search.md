@@ -65,17 +65,20 @@ Grace Hopper
   https://www.linkedin.com/in/grace-hopper/
 ```
 
-- `--network` keeps people of some connection degrees: `1st`, `2nd`, `3rd`
-  (comma-separated).
-- Results come 10 at a time, like on the website; `-n` up to 50.
+- People are found by name with the lookup of the message composer, which
+  returns up to about 10 matches. `--network 1st` keeps only your connections.
+- `--network 2nd` or `3rd`, and companies, schools and groups, use the search
+  box query, 10 results at a time with `-n` up to 50.
 - Posts can't be searched: LinkedIn's website serves that search in a format
   `lmw` doesn't read.
 
 > [!WARNING]
-> On 2 November 2026 LinkedIn answered every search, and the saved posts and
-> job tracker lists that go through the same query, with no results. If
-> `lmw search` finds nothing for a name you know is there, search has changed:
-> `lmw doctor --probe` says so too. Recording a HAR while you search on the
+> On 2 November 2026 LinkedIn answered every search box query with no results,
+> which is why people are now found through the composer's lookup. Companies,
+> schools, groups, `--network 2nd`/`3rd`, saved posts and the job tracker still
+> go through the search box query and may come back empty. If a search you know
+> should match finds nothing, `lmw doctor --probe` tells you whether search
+> works for your account. Recording a HAR while you search on the
 > website and running `lmw har inspect FILE --filter search` shows what the
 > website sends now.
 
