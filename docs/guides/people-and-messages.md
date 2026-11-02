@@ -128,6 +128,25 @@ conversations in each message folder (two more requests):
 Unread conversations: inbox 1, other 0, requests 1, archive 0, spam 0
 ```
 
+To keep an eye on them, `--watch` counts again every so often and prints a
+line when something changes, with what went up. Ctrl-C stops it:
+
+```bash
+lmw unread --watch 10m
+```
+
+```text
+Watching every 10m0s (6 requests an hour). Ctrl-C stops.
+18:40  notifications 3 · messages 1 · my network 2
+19:10  notifications 4 (+1) · messages 1 · my network 2
+```
+
+The watch may use up to 12 requests an hour, a fifth of the hourly budget,
+so `lmw` refuses shorter intervals (every 5 minutes at least, or every 15
+with `--folders`). It stops at the first error, so if LinkedIn pushes back
+the watch ends instead of insisting. With `--json` each change is one line
+of JSON.
+
 ## Notifications
 
 ```bash

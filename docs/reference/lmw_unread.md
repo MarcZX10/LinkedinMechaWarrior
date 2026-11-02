@@ -13,11 +13,20 @@ With --folders, also count unread conversations in each message folder (two more
 lmw unread [flags]
 ```
 
+### Examples
+
+```
+  lmw unread
+  lmw unread --folders
+  lmw unread --watch 10m
+```
+
 ### Options
 
 ```
-      --folders   also count unread conversations by message folder
-  -h, --help      help for unread
+      --folders          also count unread conversations by message folder
+  -h, --help             help for unread
+      --watch duration   keep counting every DURATION (10m, 1h) and print a line when something changes; Ctrl-C stops
 ```
 
 ### Options inherited from parent commands

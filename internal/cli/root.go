@@ -46,6 +46,8 @@ type app struct {
 	findSessions func(context.Context, string) ([]auth.Candidate, error)
 	// harPlaces lists the folders `har find` and "auto" HAR files look in.
 	harPlaces func() []har.Place
+	// wait pauses between the sweeps of `unread --watch`.
+	wait func(time.Duration)
 }
 
 // Main runs lmw with the process arguments and returns the exit code.
@@ -67,6 +69,7 @@ func Main() int {
 		newStore:     func(cfg config.Config) session.Store { return session.NewStore(cfg.SessionStore, cfg.SessionFile()) },
 		findSessions: auth.FindSessions,
 		harPlaces:    defaultHARPlaces,
+		wait:         interruptibleSleep(ctx),
 	}
 	return a.run(ctx, os.Args[1:])
 }

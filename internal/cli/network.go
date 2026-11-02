@@ -2,7 +2,10 @@ package cli
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"reflect"
+	"time"
 
 	"github.com/spf13/cobra"
 
@@ -231,15 +234,24 @@ func (a *app) notificationsCommand() *cobra.Command {
 	return cmd
 }
 
+// watchBudget is how many requests an hour `unread --watch` may use: a fifth
+// of the default hourly budget, so the rest of lmw keeps working.
+const watchBudget = 12
+
 func (a *app) unreadCommand() *cobra.Command {
 	var folders bool
+	var every time.Duration
 	cmd := &cobra.Command{
 		Use:   "unread",
 		Short: "Count unread notifications, messages and invitations",
 		Long: "Count what waits for you, as the badges of LinkedIn's top bar show it (one request).\n" +
 			"With --folders, also count unread conversations in each message folder (two more requests).",
-		Args: exactArgs(0, "no arguments"),
+		Example: "  lmw unread\n  lmw unread --folders\n  lmw unread --watch 10m",
+		Args:    exactArgs(0, "no arguments"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
+			if every != 0 {
+				return a.watchUnread(cmd.Context(), every, folders)
+			}
 			unread, err := fetch(a, func(c *voyager.Client) (api.Unread, error) {
 				return api.UnreadCounts(cmd.Context(), c, folders)
 			})
@@ -254,7 +266,60 @@ func (a *app) unreadCommand() *cobra.Command {
 		},
 	}
 	cmd.Flags().BoolVar(&folders, "folders", false, "also count unread conversations by message folder")
+	cmd.Flags().DurationVar(&every, "watch", 0, "keep counting every DURATION (10m, 1h) and print a line when something changes; Ctrl-C stops")
 	return cmd
+}
+
+// watchUnread counts unread items every so often until interrupted, and
+// prints the counts when they change. It stops at the first error, so a
+// pushback from LinkedIn ends the watch instead of insisting.
+func (a *app) watchUnread(ctx context.Context, every time.Duration, folders bool) error {
+	perSweep := 1
+	if folders {
+		perSweep = 3
+	}
+	if every <= 0 || float64(perSweep)*float64(time.Hour)/float64(every) > watchBudget {
+		least := time.Duration(perSweep) * time.Hour / watchBudget
+		return errs.New(errs.Usage, "--watch %s would use more than %d requests an hour; watch every %s or more", every, watchBudget, least)
+	}
+	a.note("Watching every %s (%d requests an hour). Ctrl-C stops.\n", every, perSweep*int(time.Hour/every))
+	var last *api.Unread
+	for ctx.Err() == nil {
+		unread, err := fetch(a, func(c *voyager.Client) (api.Unread, error) { return api.UnreadCounts(ctx, c, folders) })
+		if ctx.Err() != nil {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+		if last == nil || !reflect.DeepEqual(*last, unread) {
+			if err := a.printSweep(unread, last); err != nil {
+				return err
+			}
+			last = &unread
+		}
+		a.wait(every)
+	}
+	return nil
+}
+
+// printSweep prints one radar sweep: the time, the counts and what went up.
+func (a *app) printSweep(now api.Unread, before *api.Unread) error {
+	at := time.Now().Format("15:04")
+	if a.jsonOut {
+		return json.NewEncoder(a.stdout).Encode(map[string]any{"time": time.Now().Format(time.RFC3339), "unread": now})
+	}
+	count := func(name string, n int, was func(api.Unread) int) string {
+		if before != nil && n > was(*before) {
+			return fmt.Sprintf("%s %d (+%d)", name, n, n-was(*before))
+		}
+		return fmt.Sprintf("%s %d", name, n)
+	}
+	a.printf("%s  %s · %s · %s\n", at,
+		count("notifications", now.Notifications, func(u api.Unread) int { return u.Notifications }),
+		count("messages", now.Messages, func(u api.Unread) int { return u.Messages }),
+		count("my network", now.Network, func(u api.Unread) int { return u.Network }))
+	return nil
 }
 
 func firstNonEmptyString(values ...string) string {

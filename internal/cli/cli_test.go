@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -68,6 +69,10 @@ type harness struct {
 	browserAsked string
 	// harDir is the only folder `har find` and "auto" look in.
 	harDir string
+	// ctx and wait, when set, replace the command's context and the pause
+	// between watch sweeps.
+	ctx  context.Context
+	wait func(time.Duration)
 }
 
 func newHarness(t *testing.T) *harness {
@@ -109,7 +114,12 @@ func (h *harness) run(stdin string, args ...string) (int, string, string) {
 			return h.sessions, nil
 		},
 	}
-	code := a.run(context.Background(), args)
+	a.wait = h.wait
+	ctx := h.ctx
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	code := a.run(ctx, args)
 	return code, stdout.String(), stderr.String()
 }
 
@@ -777,5 +787,52 @@ func TestUnreadCountsTheTopBarBadges(t *testing.T) {
 	}
 	if strings.Contains(out, "Unread conversations") {
 		t.Errorf("folders shown without --folders:\n%s", out)
+	}
+}
+
+func TestUnreadWatchPrintsWhenCountsChange(t *testing.T) {
+	h := newHarness(t)
+	h.importPasted()
+	badges := func(notifications int) reply {
+		return reply{status: 200, body: fmt.Sprintf(`{"data":{"elements":[{"count":%d,"badgingItem":"NOTIFICATIONS"},{"count":1,"badgingItem":"MESSAGING"}]},"included":[]}`, notifications)}
+	}
+	h.linkedin.replies["/voyagerNotificationsDashBadgingItemCounts"] = badges(1)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	sweeps := 0
+	h.ctx = ctx
+	h.wait = func(d time.Duration) {
+		if d != 10*time.Minute {
+			t.Errorf("waited %s", d)
+		}
+		sweeps++
+		switch sweeps {
+		case 2:
+			h.linkedin.replies["/voyagerNotificationsDashBadgingItemCounts"] = badges(3)
+		case 3:
+			cancel()
+		}
+	}
+	code, out, errOut := h.run("", "unread", "--watch", "10m")
+	lines := strings.Split(strings.TrimSpace(out), "\n")
+	if code != 0 || len(lines) != 3 || lines[0] != "Watching every 10m0s (6 requests an hour). Ctrl-C stops." ||
+		!strings.HasSuffix(lines[1], "notifications 1 · messages 1 · my network 0") ||
+		!strings.HasSuffix(lines[2], "notifications 3 (+2) · messages 1 · my network 0") {
+		t.Fatalf("exit %d\nstdout:\n%s\nstderr:\n%s", code, out, errOut)
+	}
+}
+
+func TestUnreadWatchKeepsToItsBudget(t *testing.T) {
+	h := newHarness(t)
+	h.importPasted()
+	before := len(h.linkedin.requests)
+	for _, args := range [][]string{{"--watch", "1m"}, {"--watch", "10m", "--folders"}, {"--watch", "-5m"}} {
+		code, _, errOut := h.run("", append([]string{"unread"}, args...)...)
+		if code == 0 || !strings.Contains(errOut, "requests an hour") {
+			t.Errorf("%v: exit %d, %s", args, code, errOut)
+		}
+	}
+	if n := len(h.linkedin.requests) - before; n != 0 {
+		t.Errorf("%d requests before refusing", n)
 	}
 }
