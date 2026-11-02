@@ -108,3 +108,33 @@ func TestDoctor(t *testing.T) {
 		}
 	}
 }
+
+func TestDoctorProbeReadsEveryFeatureAndStopsOnPushback(t *testing.T) {
+	h := newHarness(t)
+	h.importPasted()
+	empty := reply{status: 200, body: `{"data":{"*elements":[]},"included":[]}`}
+	for _, path := range []string{"/voyagerIdentityDashNotificationCards", "/relationships/invitationViews", "/relationships/dash/connections",
+		"/voyagerMessagingGraphQL/graphql", "/graphql", "/voyagerJobsDashJobCards"} {
+		h.linkedin.replies[path] = empty
+	}
+	h.linkedin.replies["/identity/dash/profiles"] = reply{status: 200, body: dashProfileJSON}
+	h.linkedin.replies["/organization/companies"] = reply{status: 200, body: `{"data":{"*elements":["urn:li:fs_normalized_company:1"]},"included":[` +
+		`{"$type":"com.linkedin.voyager.organization.Company","entityUrn":"urn:li:fs_normalized_company:1","name":"LinkedIn","universalName":"linkedin"}]}`}
+
+	out := h.mustRun("", "doctor", "--probe")
+	for _, name := range []string{"me", "feed", "profile", "notifications", "invitations", "connections", "messages", "search", "saved", "jobs", "company"} {
+		if !strings.Contains(out, "✔ probe "+name) {
+			t.Errorf("probe %s did not pass:\n%s", name, out)
+		}
+	}
+
+	h.linkedin.replies["/feed/updatesV2"] = reply{status: 999}
+	before := len(h.linkedin.requests)
+	code, out, _ := h.run("", "doctor", "--probe")
+	if code == 0 || !strings.Contains(out, "✘ probe feed") || !strings.Contains(out, "stopped probing") {
+		t.Errorf("a rate limit must stop the probes: exit %d\n%s", code, out)
+	}
+	if sent := len(h.linkedin.requests) - before; sent != 2 {
+		t.Errorf("after the rate limit no request may follow; %d were sent", sent)
+	}
+}

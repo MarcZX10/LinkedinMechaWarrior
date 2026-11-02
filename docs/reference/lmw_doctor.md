@@ -11,6 +11,11 @@ and cooldowns, and the GraphQL query versions learned from HAR files.
 Sends nothing to LinkedIn unless --online is given, which checks the session
 with one request.
 
+--probe also reads a little of every feature (feed, profile, notifications,
+invitations, connections, messages, search, saved posts, jobs, companies) to
+show which ones work with your account today. That is about a dozen paced
+requests, a minute or so, and it stops at the first sign of pushback.
+
 ```
 lmw doctor [flags]
 ```
@@ -20,6 +25,7 @@ lmw doctor [flags]
 ```
   lmw doctor
   lmw doctor --online
+  lmw doctor --probe
 ```
 
 ### Options
@@ -27,6 +33,7 @@ lmw doctor [flags]
 ```
   -h, --help     help for doctor
       --online   also check the session with LinkedIn (one request)
+      --probe    also try a small read of every feature (about a dozen requests)
 ```
 
 ### Options inherited from parent commands
