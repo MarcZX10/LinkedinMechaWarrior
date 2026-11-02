@@ -110,6 +110,7 @@ nav:
       - People, messages and your network: guides/people-and-messages.md
       - React, comment and search: guides/posts-and-search.md
       - Use lmw from an AI assistant: guides/ai-assistants.md
+      - Watches, notifications and servers: guides/watches.md
       - Stay safe: guides/stay-safe.md
       - Browser identity: guides/browser-identity.md
       - Extend lmw: guides/extend-lmw.md
@@ -151,6 +152,18 @@ nav:
           - reference/lmw_messages_show.md
           - reference/lmw_notifications.md
           - reference/lmw_unread.md
+          - reference/lmw_watch.md
+          - reference/lmw_watch_add.md
+          - reference/lmw_watch_list.md
+          - reference/lmw_watch_remove.md
+          - reference/lmw_watch_run.md
+          - reference/lmw_notify.md
+          - reference/lmw_notify_add.md
+          - reference/lmw_notify_list.md
+          - reference/lmw_notify_remove.md
+          - reference/lmw_notify_send.md
+          - reference/lmw_notify_test.md
+          - reference/lmw_daemon.md
           - reference/lmw_invitations.md
           - reference/lmw_invitations_accept.md
           - reference/lmw_invitations_ignore.md

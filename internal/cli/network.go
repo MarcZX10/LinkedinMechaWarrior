@@ -237,10 +237,6 @@ func (a *app) notificationsCommand() *cobra.Command {
 	return cmd
 }
 
-// watchBudget is how many requests an hour `unread --watch` may use: a fifth
-// of the default hourly budget, so the rest of lmw keeps working.
-const watchBudget = 12
-
 func (a *app) unreadCommand() *cobra.Command {
 	var folders bool
 	var every time.Duration
@@ -286,9 +282,11 @@ func (a *app) watchUnread(ctx context.Context, every time.Duration, folders bool
 	if folders {
 		perSweep = 3
 	}
-	if every <= 0 || float64(perSweep)*float64(time.Hour)/float64(every) > watchBudget {
-		least := time.Duration(perSweep) * time.Hour / watchBudget
-		return errs.New(errs.Usage, "--watch %s would use more than %d requests an hour; watch every %s or more", every, watchBudget, least)
+	// It may use what watches may (see watchBudgetPerHour).
+	budget := a.watchBudgetPerHour()
+	if every <= 0 || float64(perSweep)*float64(time.Hour)/float64(every) > budget {
+		least := (time.Duration(float64(perSweep)*float64(time.Hour)/budget) + time.Minute - 1).Truncate(time.Minute)
+		return errs.New(errs.Usage, "--watch %s would use more than %s requests an hour; watch every %s or more", every, rate(budget), least)
 	}
 	a.note("Watching every %s (%d requests an hour). Ctrl-C stops.\n", every, perSweep*int(time.Hour/every))
 	var last *api.Unread

@@ -36,6 +36,12 @@ func (c Config) IdentityFile() string { return filepath.Join(c.StateDir, "identi
 // QueriesFile stores the GraphQL query versions learned from HAR files.
 func (c Config) QueriesFile() string { return filepath.Join(c.StateDir, "graphql-queries.json") }
 
+// WatchesFile stores the watches `lmw daemon` checks.
+func (c Config) WatchesFile() string { return filepath.Join(c.StateDir, "watches.json") }
+
+// NotifyFile stores the notification channels, with their tokens.
+func (c Config) NotifyFile() string { return filepath.Join(c.StateDir, "notify.json") }
+
 // Load reads the configuration from the environment and validates it.
 func Load() (Config, error) {
 	return FromEnv(os.Getenv)

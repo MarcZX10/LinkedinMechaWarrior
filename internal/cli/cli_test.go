@@ -470,9 +470,12 @@ func TestMCPServesReadToolsAndGuardsWrites(t *testing.T) {
 	if info := answers[1]["result"].(map[string]any)["serverInfo"].(map[string]any); info["name"] != "lmw" {
 		t.Errorf("server info %v", info)
 	}
+	// Tools that change only lmw's own settings are offered anyway.
+	local := map[string]bool{"create_watch": true, "delete_watch": true, "check_watches": true, "send_notification": true}
 	for _, tool := range answers[2]["result"].(map[string]any)["tools"].([]any) {
-		if tool.(map[string]any)["annotations"].(map[string]any)["readOnlyHint"] != true {
-			t.Errorf("write tool offered without --allow-write: %v", tool.(map[string]any)["name"])
+		name, _ := tool.(map[string]any)["name"].(string)
+		if tool.(map[string]any)["annotations"].(map[string]any)["readOnlyHint"] != true && !local[name] {
+			t.Errorf("write tool offered without --allow-write: %v", name)
 		}
 	}
 	if text, isError := mcpText(t, answers[3]); isError || !strings.Contains(text, `"name": "Ada Lovelace"`) {

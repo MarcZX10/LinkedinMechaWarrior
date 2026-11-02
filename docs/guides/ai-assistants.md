@@ -97,6 +97,8 @@ Even then, nothing is posted or sent behind your back:
 | `get_saved_posts` | The posts you saved | |
 | `get_request_budget` | Requests used and any cooldown (sends nothing) | |
 | `linkedin_api_get` | Raw GET to the internal API, for anything else | |
+| `create_watch`, `list_watches`, `delete_watch`, `check_watches` | Keep an eye on something and tell you later: someone's next post, new jobs, messages ([watches](watches.md)) | |
+| `list_notification_channels`, `send_notification` | Where notifications go, and a notification of the assistant's | |
 | `publish_post` | Publish a post, with images, a video, a PDF, a poll or a link card, now or scheduled | ✔ |
 | `edit_post` | Replace the text of one of your posts | ✔ |
 | `comment_on_post`, `reply_to_comment` | Comment on a post, reply to a comment | ✔ |
@@ -109,6 +111,12 @@ Even then, nothing is posted or sent behind your back:
 
 Profiles, posts, companies and jobs can be given as their LinkedIn address,
 so you can paste links into the conversation.
+
+Watches and notification channels are `lmw`'s own settings, not LinkedIn,
+so their tools are offered without `--allow-write`. Ask "tell me when Grace
+Hopper posts next" and the assistant adds a watch; `lmw daemon` does the
+watching and notifies you, even with the assistant closed. To run it all on a
+server, see [Watches, notifications and servers](watches.md).
 
 ## Good to know
 

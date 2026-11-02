@@ -12,6 +12,7 @@ import (
 	"golang.org/x/term"
 
 	"github.com/MarcZX10/LinkedinMechaWarrior/internal/api"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/watch"
 )
 
 const (
@@ -296,6 +297,33 @@ func Unread(u api.Unread) string {
 		lines = append(lines, "", "Unread conversations: "+strings.Join(folders, ", "))
 	}
 	return strings.Join(lines, "\n")
+}
+
+// Watch formats one watch for the list: id, what, how often and its state.
+func Watch(w watch.Watch) string {
+	line := fmt.Sprintf("%s  %s, every %s", w.ID, w.Describe(), w.Every())
+	if w.Once {
+		line += ", once"
+	}
+	if w.Channel != "" {
+		line += " → " + w.Channel
+	}
+	var state []string
+	if w.Note != "" {
+		state = append(state, w.Note)
+	}
+	if w.LastRun.IsZero() {
+		state = append(state, "not checked yet")
+	} else {
+		state = append(state, "checked "+w.LastRun.Local().Format("2006-01-02 15:04"))
+	}
+	if w.Found > 0 {
+		state = append(state, fmt.Sprintf("%d found", w.Found))
+	}
+	if w.LastError != "" {
+		state = append(state, "failing: "+w.LastError)
+	}
+	return line + "\n    " + strings.Join(state, " · ")
 }
 
 // Comments formats comments with their authors.

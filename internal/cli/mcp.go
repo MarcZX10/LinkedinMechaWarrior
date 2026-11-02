@@ -13,7 +13,8 @@ const mcpInstructions = `lmw reads and acts on the person's own LinkedIn account
 - Every request is paced like a person (a few seconds apart) and counted against hourly and daily budgets, so calls are slow and limited. Ask for what you need, not more: no bulk reading, no loops over many profiles.
 - If a tool reports a cooldown, a security check or an expired session, stop and tell the person; don't retry.
 - Profiles, posts, companies and jobs can be given as their LinkedIn address or as the id inside it.
-- Tools that change something on LinkedIn (publishing, messaging, reacting, connecting) are only available when the person allowed it, and they may be asked to confirm each one. Show the person what you are about to post or send before calling them.`
+- Tools that change something on LinkedIn (publishing, messaging, reacting, connecting) are only available when the person allowed it, and they may be asked to confirm each one. Show the person what you are about to post or send before calling them.
+- When the person wants to be told about something later ("tell me when X posts", "new jobs for Y", "any new message"), create a watch with create_watch instead of checking again and again yourself. ` + "`lmw daemon`" + ` checks watches and sends notifications to the person's channels (list_notification_channels); with no daemon running, check_watches checks them now. send_notification sends the person a message of yours.`
 
 func (a *app) mcpCommand() *cobra.Command {
 	var allowWrite bool
@@ -80,7 +81,7 @@ func listOf[T any](key string, items []T, err error) (any, error) {
 
 func (a *app) mcpTools() []mcp.Tool {
 	var tools []mcp.Tool
-	for _, group := range [][]mcp.Tool{a.mcpAccountTools(), a.mcpProfileTools(), a.mcpPostTools(), a.mcpSocialTools(), a.mcpMessagingTools(), a.mcpNetworkTools(), a.mcpDiscoverTools(), a.mcpSavedTools()} {
+	for _, group := range [][]mcp.Tool{a.mcpAccountTools(), a.mcpProfileTools(), a.mcpPostTools(), a.mcpSocialTools(), a.mcpMessagingTools(), a.mcpNetworkTools(), a.mcpDiscoverTools(), a.mcpSavedTools(), a.mcpWatchTools()} {
 		tools = append(tools, group...)
 	}
 	return tools

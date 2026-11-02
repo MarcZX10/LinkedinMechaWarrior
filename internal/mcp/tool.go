@@ -18,6 +18,9 @@ type Tool struct {
 	ReadOnly bool
 	// Destructive tools remove something (a post, a connection).
 	Destructive bool
+	// Local tools change only lmw's own settings on this computer (watches,
+	// notification channels), never LinkedIn, so they are always offered.
+	Local bool
 	// Confirm describes what a call that changes something will do. When the
 	// client supports elicitation, the person must accept it first.
 	Confirm func(Args) (string, error)

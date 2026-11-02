@@ -1,5 +1,38 @@
 # Changelog
 
+## Unreleased
+
+### Watch and notify
+
+- `watch add`: keep an eye on someone's next posts, profile changes, new
+  comments on a post, new jobs for a search, connection requests, messages,
+  notifications or the unread badges. The first check only takes note of
+  what is there, so you hear about what comes next; `--once` ends a watch
+  after its first notification.
+- `daemon` checks the watches as they fall due, 24/7 if you like; `watch run`
+  does one round, for cron. Both stop and tell you when LinkedIn pushes back.
+- `notify add`: notifications by ntfy, Telegram, Discord, Slack, a webhook or
+  a command. Tokens stay in a file only you can read.
+- All watches together keep to a share of the request budgets: about 6
+  requests an hour by default.
+- MCP: `create_watch`, `list_watches`, `delete_watch`, `check_watches`,
+  `list_notification_channels` and `send_notification`, offered without
+  `--allow-write` since they only change lmw's own settings. "Tell me when
+  Grace posts next" now works.
+- A guide to running lmw on a server, with a systemd unit and the assistant
+  connected over SSH.
+
+### Read
+
+- `unread`: the unread badges of the top bar, with one request; `--folders`
+  counts unread conversations by folder, `--watch` counts again every so
+  often, and `--on-change` runs a command when a count goes up.
+
+### Fixed
+
+- `post comments` and `post reactions` answered nothing for reposts: they
+  now read the thread of the original post, as the website does.
+
 ## 1.0.0 (2026-11-02)
 
 The first complete release: most of what you do on LinkedIn's website, from

@@ -29,6 +29,7 @@ Start with `lmw auth import`.
 * [lmw company](lmw_company.md)	 - Look at and follow companies and schools
 * [lmw connect](lmw_connect.md)	 - Send a connection request (asks for confirmation)
 * [lmw connections](lmw_connections.md)	 - List your connections, most recently added first
+* [lmw daemon](lmw_daemon.md)	 - Keep checking your watches and send notifications (Ctrl-C stops)
 * [lmw doctor](lmw_doctor.md)	 - Check that lmw is ready to fly
 * [lmw feed](lmw_feed.md)	 - Show your home feed
 * [lmw har](lmw_har.md)	 - Inspect HAR files recorded in your browser
@@ -40,9 +41,11 @@ Start with `lmw auth import`.
 * [lmw me](lmw_me.md)	 - Show your profile
 * [lmw messages](lmw_messages.md)	 - Read and send messages
 * [lmw notifications](lmw_notifications.md)	 - Show your latest notifications
+* [lmw notify](lmw_notify.md)	 - Choose where lmw sends notifications: phone, Telegram, Discord...
 * [lmw post](lmw_post.md)	 - Write, publish, read and react to posts
 * [lmw profile](lmw_profile.md)	 - Look at a member's profile, contact info and posts
 * [lmw saved](lmw_saved.md)	 - Show the posts you saved
 * [lmw search](lmw_search.md)	 - Search people, companies, schools or groups
 * [lmw unread](lmw_unread.md)	 - Count unread notifications, messages and invitations
+* [lmw watch](lmw_watch.md)	 - Keep an eye on LinkedIn for you: new posts of someone, jobs, messages...
 

@@ -195,7 +195,7 @@ func (s *Server) initialize(params json.RawMessage) (any, *rpcError) {
 	return result, nil
 }
 
-func (s *Server) offered(t Tool) bool { return t.ReadOnly || s.AllowWrite }
+func (s *Server) offered(t Tool) bool { return t.ReadOnly || t.Local || s.AllowWrite }
 
 func (s *Server) listTools() []any {
 	tools := []any{}
