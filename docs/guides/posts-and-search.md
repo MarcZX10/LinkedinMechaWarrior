@@ -71,6 +71,14 @@ Grace Hopper
 - Posts can't be searched: LinkedIn's website serves that search in a format
   `lmw` doesn't read.
 
+> [!WARNING]
+> On 2 November 2026 LinkedIn answered every search, and the saved posts and
+> job tracker lists that go through the same query, with no results. If
+> `lmw search` finds nothing for a name you know is there, search has changed:
+> `lmw doctor --probe` says so too. Recording a HAR while you search on the
+> website and running `lmw har inspect FILE --filter search` shows what the
+> website sends now.
+
 ## Companies and schools
 
 ```bash

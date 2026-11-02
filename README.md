@@ -190,11 +190,14 @@ For deeper repairs, `lmw har inspect` shows every call the website made and
 through turning that into a new command.
 
 > [!NOTE]
-> The endpoints come from LinkedIn's web app as seen by public clients that
-> verified them against live accounts in 2026, plus `lmw`'s own tests against a
-> simulated LinkedIn. They haven't all been flown by `lmw` against a live
-> account; if one fails, [Troubleshooting](docs/troubleshooting.md) says what
-> to do.
+> **Flight log, 2 November 2026.** `lmw doctor --probe` against a live account:
+> profile, feed, full profiles, notifications, invitations, connections,
+> messages, job search and company pages all answered and were read. Search
+> (`search`, and `saved` and `jobs tracked`, which use the same query) answered
+> 200 but empty for every query, so it needs a fresh capture of what the website
+> sends. The writes follow payloads public clients verified live in 2026 and are
+> covered by `lmw`'s tests against a simulated LinkedIn. If something fails,
+> [Troubleshooting](docs/troubleshooting.md) says what to do.
 
 ## 📖 Pilot's manual
 
