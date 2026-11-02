@@ -70,7 +70,7 @@ go install github.com/MarcZX10/LinkedinMechaWarrior/cmd/lmw@latest
 the developer tools ([how](docs/guides/import-session.md)), and hand it over:
 
 ```bash
-lmw auth import --har linkedin.har
+lmw auth import --har linkedin.har     # or just --har: lmw finds it, asking first
 ```
 
 ```text

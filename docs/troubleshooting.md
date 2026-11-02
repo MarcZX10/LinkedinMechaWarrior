@@ -36,6 +36,8 @@ and follow the fix. Errors start with `lmw:`; parts in `<angle brackets>` vary.
 | `the HAR file has no LinkedIn API requests with headers. ...` | The recording doesn't include calls to `/voyager/api/`. | Keep the Network tab open, **reload** LinkedIn, wait for the feed, then save. |
 | `the HAR was recorded with a browser lmw cannot imitate (<user agent>); ...` | The HAR comes from Safari or another browser without a matching TLS profile. | Record the HAR with Chrome, Edge, Brave, Opera or Firefox. The session itself was still imported; only the identity was skipped. |
 | `<file> is not a HAR file: <details>` | The file is not valid HAR JSON (incomplete download, wrong file). | Save the HAR again. |
+| `no HAR file of LinkedIn found there. ...` | `--har` without a file, or `auto`, found no HAR with LinkedIn traffic in the folders it showed. | Save the HAR to your downloads, or give its path. `lmw har find` lists what it sees. |
+| `no HAR file was chosen` | You didn't type `yes` when `lmw` asked to look for HAR files. | Run it again and type `yes`, or give the file's path. |
 | `use either --browser or --har, not both` | Two import methods at once. | Pick one. |
 | `unexpected argument "<x>"; use --browser NAME, --har FILE or no flags` | A word without a flag, e.g. `lmw auth import firefox`. | Write `lmw auth import --browser firefox`. |
 

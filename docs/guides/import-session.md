@@ -57,6 +57,34 @@ Logged in as Ada Lovelace.
 Session from HAR file saved in the system keyring.
 ```
 
+**Don't want to type the path?** Leave it out, and `lmw` looks for the newest
+HAR file of LinkedIn where your browser saves files:
+
+```bash
+lmw auth import --har
+```
+
+```text
+lmw will look for HAR files of LinkedIn here. It reads the names of the files
+in these folders, the shortcuts to recently saved .har files, and the start of
+each .har file, and sends nothing anywhere:
+  recent files       C:\Users\ada\AppData\Roaming\Microsoft\Windows\Recent
+  firefox downloads  C:\Users\ada\Downloads
+  Desktop            C:\Users\ada\Desktop
+  this folder        C:\Users\ada\projects
+Type 'yes' to let lmw look there: yes
+Using E:\linkedin.har, saved 2026-11-02 19:20.
+```
+
+It looks among your recently saved files (Windows' Recent items, or
+`recently-used.xbel` on Linux), which finds the HAR wherever you saved it and
+with whichever browser; in the download and last-save folders of Chrome, Edge,
+Brave, Vivaldi and Firefox, your default browser first; and in your Downloads
+and Desktop folders and the current folder. It does that only after you type
+`yes`. `lmw har find` lists all the
+HAR files of LinkedIn it finds there; `lmw har learn auto` and
+`lmw har inspect auto` use the newest one too.
+
 > [!CAUTION]
 > A HAR file "with sensitive data" contains your session cookie. Anyone with
 > the file can use your account until the session ends. Delete it after the
