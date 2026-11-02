@@ -18,6 +18,11 @@ var SearchTypes = map[string]string{
 	"groups":    "GROUPS",
 }
 
+// SearchBoxCaveat explains empty answers of the search box query, which since
+// November 2026 has answered every search with no results for some accounts.
+const SearchBoxCaveat = "LinkedIn's search box query has answered every search with no results since November 2026, " +
+	"so an empty answer may not mean there is nothing; `lmw doctor --probe` checks it"
+
 // NetworkDegrees maps connection degrees to LinkedIn's search filter values.
 var NetworkDegrees = map[string]string{"1st": "F", "2nd": "S", "3rd": "O"}
 

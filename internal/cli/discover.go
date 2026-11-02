@@ -47,7 +47,11 @@ func (a *app) searchCommand() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			return printList(a, results, "No results.", output.SearchResults)
+			empty := "No results."
+			if args[0] != "people" || len(network) > 0 && !(len(network) == 1 && network[0] == "1st") {
+				empty = "No results. " + api.SearchBoxCaveat + "."
+			}
+			return printList(a, results, empty, output.SearchResults)
 		},
 	}
 	limitFlag(cmd, &limit, "results", 10, api.MaxListItems)
@@ -189,10 +193,11 @@ func (a *app) jobsCommand() *cobra.Command {
 func (a *app) mcpDiscoverTools() []mcp.Tool {
 	return []mcp.Tool{
 		{
-			Name:        "search",
-			Title:       "Search LinkedIn",
-			Description: "Search people, companies, schools or groups like the website's search box. Posts can't be searched; for jobs use search_jobs.",
-			ReadOnly:    true,
+			Name:  "search",
+			Title: "Search LinkedIn",
+			Description: "Search people, companies, schools or groups like the website's search box. Posts can't be searched; for jobs use search_jobs. " +
+				"People are found by name. Companies, schools, groups and 2nd/3rd-degree filters may come back empty: " + api.SearchBoxCaveat + ".",
+			ReadOnly: true,
 			Params: []mcp.Param{
 				{Name: "type", Type: "string", Description: "what to search", Enum: searchTypes(), Required: true},
 				{Name: "keywords", Type: "string", Description: "what to look for", Required: true},

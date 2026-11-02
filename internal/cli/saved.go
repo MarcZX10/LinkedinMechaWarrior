@@ -25,7 +25,7 @@ func (a *app) savedCommand() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			return printList(a, posts, "No saved posts.", output.SavedPosts)
+			return printList(a, posts, "No saved posts. "+api.SearchBoxCaveat+".", output.SavedPosts)
 		},
 	}
 	limitFlag(cmd, &limit, "posts", 10, api.MaxListItems)
@@ -45,7 +45,7 @@ func (a *app) jobsTrackedCommand() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			return printList(a, jobs, "No jobs at this stage.", output.Jobs)
+			return printList(a, jobs, "No jobs at this stage. "+api.SearchBoxCaveat+".", output.Jobs)
 		},
 	}
 	limitFlag(cmd, &limit, "jobs", 10, api.MaxListItems)
@@ -58,7 +58,7 @@ func (a *app) mcpSavedTools() []mcp.Tool {
 		{
 			Name:        "get_saved_posts",
 			Title:       "Saved posts",
-			Description: "The posts the person saved on LinkedIn, most recently saved first.",
+			Description: "The posts the person saved on LinkedIn, most recently saved first. An empty list may not mean none: " + api.SearchBoxCaveat + ".",
 			ReadOnly:    true,
 			Params:      []mcp.Param{limitParam("posts", 10, api.MaxListItems)},
 			Run: func(ctx context.Context, args mcp.Args) (any, error) {
@@ -67,10 +67,11 @@ func (a *app) mcpSavedTools() []mcp.Tool {
 			},
 		},
 		{
-			Name:        "get_tracked_jobs",
-			Title:       "Job tracker",
-			Description: "The jobs in one stage of the person's job tracker: saved, in progress, applied, interviewing or archived.",
-			ReadOnly:    true,
+			Name:  "get_tracked_jobs",
+			Title: "Job tracker",
+			Description: "The jobs in one stage of the person's job tracker: saved, in progress, applied, interviewing or archived. " +
+				"An empty list may not mean none: " + api.SearchBoxCaveat + ".",
+			ReadOnly: true,
 			Params: []mcp.Param{
 				{Name: "stage", Type: "string", Description: "which stage", Enum: api.JobStageNames, Default: "saved"},
 				limitParam("jobs", 10, api.MaxListItems),

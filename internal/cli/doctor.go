@@ -172,6 +172,16 @@ var probes = []probe{
 		}
 		return countOf(found, err)
 	}},
+	{"search box", func(ctx context.Context, c *voyager.Client, _ api.Profile) (string, error) {
+		// Companies, schools, groups, saved posts and the job tracker go through the
+		// search box query; LinkedIn itself always shows up in a company search.
+		found, err := api.Search(ctx, c, "companies", "linkedin", api.SearchOptions{}, 1)
+		if err == nil && len(found) == 0 {
+			err = errs.New(errs.API, "a company search for LinkedIn found nothing: company, school and group search, "+
+				"saved posts and the job tracker will come back empty")
+		}
+		return countOf(found, err)
+	}},
 	{"saved", func(ctx context.Context, c *voyager.Client, _ api.Profile) (string, error) {
 		return countOf(api.SavedPosts(ctx, c, 1))
 	}},
