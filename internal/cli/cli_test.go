@@ -487,3 +487,36 @@ func TestMCPServesReadToolsAndGuardsWrites(t *testing.T) {
 		t.Errorf("publish payload %s", last)
 	}
 }
+
+const dashProfileJSON = `{"data":{"*elements":["urn:li:fsd_profile:ACoAAB"]},"included":[` +
+	`{"$type":"com.linkedin.voyager.dash.identity.profile.Profile","entityUrn":"urn:li:fsd_profile:ACoAAB","firstName":"Grace","lastName":"Hopper","headline":"Rear admiral","publicIdentifier":"grace"},` +
+	`{"$type":"com.linkedin.voyager.dash.identity.profile.Position","title":"Programmer","companyName":"Harvard","dateRange":{"start":{"year":1944}}},` +
+	`{"$type":"com.linkedin.voyager.dash.identity.profile.Skill","name":"COBOL"}]}`
+
+func TestProfileCommands(t *testing.T) {
+	h := newHarness(t)
+	h.importPasted()
+	h.linkedin.replies["/identity/dash/profiles"] = reply{status: 200, body: dashProfileJSON}
+	h.linkedin.replies["/identity/profileUpdatesV2"] = reply{status: 200, body: feedJSON}
+	h.linkedin.replies["/identity/profiles/grace/profileContactInfo"] = reply{status: 200, body: `{"data":{"emailAddress":"grace@example.com"},"included":[]}`}
+
+	out := h.mustRun("", "profile", "show", "https://www.linkedin.com/in/grace/")
+	for _, want := range []string{"Grace Hopper", "Rear admiral", "Programmer · Harvard", "1944 – present", "COBOL"} {
+		if !strings.Contains(out, want) {
+			t.Errorf("profile show is missing %q:\n%s", want, out)
+		}
+	}
+	if last := h.linkedin.requests[len(h.linkedin.requests)-1]; last.URL.Query().Get("memberIdentity") != "grace" {
+		t.Errorf("profile show asked for %s", last.URL)
+	}
+	if out := h.mustRun("", "profile", "contact", "grace"); !strings.Contains(out, "grace@example.com") {
+		t.Errorf("profile contact: %s", out)
+	}
+	var posts []map[string]any
+	if err := json.Unmarshal([]byte(h.mustRun("", "profile", "posts", "grace", "-n", "1", "--json")), &posts); err != nil || posts[0]["author"] != "Grace Hopper" {
+		t.Errorf("profile posts: %v %v", posts, err)
+	}
+	if code, _, stderr := h.run("", "profile", "show", "not a profile"); code != 2 || !strings.Contains(stderr, "not a LinkedIn profile") {
+		t.Errorf("bad profile: exit %d, %s", code, stderr)
+	}
+}

@@ -80,7 +80,7 @@ func listOf[T any](key string, items []T, err error) (any, error) {
 
 func (a *app) mcpTools() []mcp.Tool {
 	var tools []mcp.Tool
-	for _, group := range [][]mcp.Tool{a.mcpAccountTools(), a.mcpPostTools()} {
+	for _, group := range [][]mcp.Tool{a.mcpAccountTools(), a.mcpProfileTools(), a.mcpPostTools()} {
 		tools = append(tools, group...)
 	}
 	return tools

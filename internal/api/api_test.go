@@ -167,6 +167,10 @@ func (f *fakeClient) Post(_ context.Context, _ string, _ voyager.Params, payload
 	return f.response, nil
 }
 
+func (f *fakeClient) Delete(context.Context, string, voyager.Params) ([]byte, error) {
+	return f.response, nil
+}
+
 func pageOf(t *testing.T, from, to int) []byte {
 	var updates []update
 	for i := from; i < to; i++ {

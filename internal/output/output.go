@@ -141,3 +141,87 @@ func firstNonEmpty(values ...string) string {
 	}
 	return ""
 }
+
+// ProfileDetails formats a full profile.
+func ProfileDetails(p api.ProfileDetails) string {
+	width := Width()
+	lines := []string{p.Name}
+	if p.Headline != "" {
+		lines = append(lines, Wrap(p.Headline, width, "")...)
+	}
+	if facts := joinNonEmpty(" · ", p.Location, p.Industry); facts != "" {
+		lines = append(lines, facts)
+	}
+	if p.URL != "" {
+		lines = append(lines, p.URL)
+	}
+	if p.About != "" {
+		lines = append(lines, "", "About")
+		lines = append(lines, Wrap(p.About, width, "  ")...)
+	}
+	if len(p.Experience) > 0 {
+		lines = append(lines, "", "Experience")
+		for _, pos := range p.Experience {
+			lines = append(lines, "  "+joinNonEmpty(" · ", pos.Title, pos.Company))
+			if details := joinNonEmpty(" · ", period(pos.Start, pos.End), pos.Location); details != "" {
+				lines = append(lines, "    "+details)
+			}
+		}
+	}
+	if len(p.Education) > 0 {
+		lines = append(lines, "", "Education")
+		for _, edu := range p.Education {
+			lines = append(lines, "  "+edu.School)
+			if details := joinNonEmpty(" · ", joinNonEmpty(", ", edu.Degree, edu.Field), period(edu.Start, edu.End)); details != "" {
+				lines = append(lines, "    "+details)
+			}
+		}
+	}
+	if len(p.Skills) > 0 {
+		lines = append(lines, "", "Skills")
+		lines = append(lines, Wrap(strings.Join(p.Skills, ", "), width, "  ")...)
+	}
+	return strings.Join(lines, "\n")
+}
+
+// ContactInfo formats a member's contact info.
+func ContactInfo(c api.ContactInfo) string {
+	var lines []string
+	add := func(label string, values ...string) {
+		for _, v := range values {
+			if v != "" {
+				lines = append(lines, fmt.Sprintf("%-9s %s", label+":", v))
+			}
+		}
+	}
+	add("Email", c.Email)
+	add("Phone", c.Phones...)
+	add("Website", c.Websites...)
+	add("Twitter", c.Twitter...)
+	add("Birthday", c.Birthday)
+	add("Address", c.Address)
+	if len(lines) == 0 {
+		return "No contact info shared with you."
+	}
+	return strings.Join(lines, "\n")
+}
+
+func period(start, end string) string {
+	switch {
+	case start == "" && end == "":
+		return ""
+	case end == "":
+		return start + " – present"
+	}
+	return start + " – " + end
+}
+
+func joinNonEmpty(separator string, values ...string) string {
+	var kept []string
+	for _, v := range values {
+		if v = strings.TrimSpace(v); v != "" {
+			kept = append(kept, v)
+		}
+	}
+	return strings.Join(kept, separator)
+}

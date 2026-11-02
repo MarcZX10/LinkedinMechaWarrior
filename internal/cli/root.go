@@ -150,7 +150,7 @@ func (a *app) rootCommand() *cobra.Command {
 	root.PersistentFlags().BoolVarP(&a.verbose, "verbose", "v", false, "show debug logs, including every API request")
 	root.SetVersionTemplate("lmw {{.Version}}\n")
 
-	root.AddCommand(a.authCommand(), a.meCommand(), a.feedCommand(), a.postCommand(),
+	root.AddCommand(a.authCommand(), a.meCommand(), a.feedCommand(), a.profileCommand(), a.postCommand(),
 		a.apiCommand(), a.harCommand(), a.identityCommand(), a.limitsCommand(), a.mcpCommand())
 	return root
 }

@@ -20,6 +20,7 @@ import (
 type Client interface {
 	Get(ctx context.Context, path string, params voyager.Params) ([]byte, error)
 	Post(ctx context.Context, path string, params voyager.Params, payload any) ([]byte, error)
+	Delete(ctx context.Context, path string, params voyager.Params) ([]byte, error)
 }
 
 const (
@@ -99,21 +100,28 @@ func Feed(ctx context.Context, c Client, limit int) ([]FeedPost, error) {
 	if limit < 1 || limit > MaxFeedPosts {
 		return nil, errs.New(errs.Usage, "--limit must be between 1 and %d", MaxFeedPosts)
 	}
+	return paginatePosts(limit, func(start int) ([]byte, error) {
+		return c.Get(ctx, "/feed/updatesV2", voyager.Params{
+			{Key: "count", Value: strconv.Itoa(FeedPageSize)},
+			{Key: "q", Value: "chronFeed"},
+			{Key: "start", Value: strconv.Itoa(start)},
+		})
+	})
+}
+
+// paginatePosts fetches pages of updates until it has limit posts.
+func paginatePosts(limit int, page func(start int) ([]byte, error)) ([]FeedPost, error) {
 	var posts []FeedPost
 	start := 0
 	// Hard cap on pages, in case pages keep coming back with elements we can't parse.
 	maxPages := (limit+FeedPageSize-1)/FeedPageSize + 1
 	for range maxPages {
-		raw, err := c.Get(ctx, "/feed/updatesV2", voyager.Params{
-			{Key: "count", Value: strconv.Itoa(FeedPageSize)},
-			{Key: "q", Value: "chronFeed"},
-			{Key: "start", Value: strconv.Itoa(start)},
-		})
+		raw, err := page(start)
 		if err != nil {
 			return nil, err
 		}
-		page, elements := ParseFeed(raw)
-		posts = append(posts, page...)
+		found, elements := ParseFeed(raw)
+		posts = append(posts, found...)
 		if elements == 0 || len(posts) >= limit {
 			break
 		}

@@ -33,4 +33,5 @@ Start with `lmw auth import`.
 * [lmw mcp](lmw_mcp.md)	 - Let an AI assistant use lmw through MCP (stdio)
 * [lmw me](lmw_me.md)	 - Show your profile
 * [lmw post](lmw_post.md)	 - Draft, check and publish posts
+* [lmw profile](lmw_profile.md)	 - Look at a member's profile, contact info and posts
 

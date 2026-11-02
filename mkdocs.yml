@@ -102,6 +102,10 @@ nav:
           - reference/lmw_auth_logout.md
           - reference/lmw_me.md
           - reference/lmw_feed.md
+          - reference/lmw_profile.md
+          - reference/lmw_profile_show.md
+          - reference/lmw_profile_contact.md
+          - reference/lmw_profile_posts.md
           - reference/lmw_post.md
           - reference/lmw_post_draft.md
           - reference/lmw_post_preview.md

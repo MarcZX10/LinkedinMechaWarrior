@@ -191,6 +191,11 @@ func (c *Client) Post(ctx context.Context, path string, params Params, payload a
 	return c.Do(ctx, "POST", path, params, payload, NormalizedJSON)
 }
 
+// Delete sends a DELETE request and returns the raw JSON body, if any.
+func (c *Client) Delete(ctx context.Context, path string, params Params) ([]byte, error) {
+	return c.Do(ctx, "DELETE", path, params, nil, NormalizedJSON)
+}
+
 // Do sends one paced request.
 func (c *Client) Do(ctx context.Context, method, path string, params Params, payload any, accept string) ([]byte, error) {
 	if err := c.session.Validate(); err != nil {

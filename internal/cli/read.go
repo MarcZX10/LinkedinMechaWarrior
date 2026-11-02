@@ -56,27 +56,32 @@ func (a *app) feedCommand() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			if a.jsonOut {
-				if posts == nil {
-					posts = []api.FeedPost{}
-				}
-				return output.JSON(a.stdout, posts)
-			}
-			if len(posts) == 0 {
-				a.printf("No posts found. If your feed is not empty, LinkedIn may have changed its API; see `lmw har --help`.\n")
-				return nil
-			}
-			formatted := make([]string, len(posts))
-			for i, p := range posts {
-				formatted[i] = output.FeedPost(p, full)
-			}
-			a.printf("%s\n", strings.Join(formatted, "\n\n"))
-			return nil
+			return a.printPosts(posts, full, "No posts found. If your feed is not empty, LinkedIn may have changed its API; see `lmw har --help`.")
 		},
 	}
 	cmd.Flags().IntVarP(&limit, "limit", "n", 10, "number of posts (1-50)")
 	cmd.Flags().BoolVar(&full, "full", false, "show complete post texts")
 	return cmd
+}
+
+// printPosts prints posts as JSON or for people.
+func (a *app) printPosts(posts []api.FeedPost, full bool, empty string) error {
+	if a.jsonOut {
+		if posts == nil {
+			posts = []api.FeedPost{}
+		}
+		return output.JSON(a.stdout, posts)
+	}
+	if len(posts) == 0 {
+		a.printf("%s\n", empty)
+		return nil
+	}
+	formatted := make([]string, len(posts))
+	for i, p := range posts {
+		formatted[i] = output.FeedPost(p, full)
+	}
+	a.printf("%s\n", strings.Join(formatted, "\n\n"))
+	return nil
 }
 
 func (a *app) mcpAccountTools() []mcp.Tool {
