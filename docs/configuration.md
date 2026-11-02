@@ -49,6 +49,7 @@ The directory is created with permissions for your user only.
 |---|---|:---:|---|
 | `request-log.json` | Timestamps of the requests of the last 24 h, and any active cooldown | no | Yes, but it resets the budgets and cooldowns, which defeats their purpose |
 | `identity.json` | The browser identity imported from a HAR (no cookies) | a little | Yes: `lmw identity reset` does it |
+| `graphql-queries.json` | GraphQL query versions learned from HAR files with `lmw har learn` | no | Yes: `lmw` goes back to its built-in versions |
 | `session.json` | The session cookies, **only** when no keyring is available | **yes** | Yes: `lmw auth logout` does it |
 
 When a keyring is available, the session is stored there instead, under the

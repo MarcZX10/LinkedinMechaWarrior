@@ -76,6 +76,29 @@ lmw api get /feed/updatesV2 -p count=10 -p q=chronFeed -p start=0
 
 If you get the data you saw in the HAR, the endpoint is usable.
 
+### GraphQL queries
+
+Calls to `/voyager/api/graphql` (and `/voyagerMessagingGraphQL/graphql`) are
+GraphQL queries. Add them to `internal/api/queries.go` with the variables they
+take and the hash you saw, and call them with `Query.Get` (or `Query.Execute`
+for the POST ones that change something):
+
+```go
+commentsQuery = Query{
+	Name: "voyagerSocialDashComments", Vars: []string{"count", "numReplies", "socialDetailUrn", "sortOrder", "start"},
+	Hashes: []string{"afec6d88d7810d45548797a8dac4fb87"},
+}
+
+raw, err := commentsQuery.Get(ctx, c, fmt.Sprintf("(count:%d,...,socialDetailUrn:%s,start:%d)", 10, restliValue(urn), 0))
+```
+
+- Encode URNs inside `variables` with `restliValue`: their `:`, `,`, `(` and
+  `)` must not be read as structure.
+- Answers have the collection under `data.data.<queryName>`; `collection(doc)`
+  finds it.
+- When LinkedIn retires a hash, users fix it with `lmw har learn`, and you can
+  add the new hash in front of the list.
+
 ## 4. Write the parser
 
 Responses use LinkedIn's "normalized" JSON: the main object in `data`, every
@@ -185,8 +208,9 @@ anything.
 ```text
 cmd/lmw/           main()
 internal/
-  cli/             commands (cobra), tests with a fake LinkedIn, docs checks
-  api/             endpoints and parsers          ← features go here
+  cli/             commands (cobra) and their MCP tools, tests with a fake LinkedIn, docs checks
+  api/             endpoints, GraphQL queries and parsers   ← features go here
+  mcp/             the MCP server (JSON-RPC over stdio)
   normalized/      helpers for normalized JSON
   voyager/         HTTP client: fingerprint, headers, cookies, error handling
   pacing/          delays, budgets, cooldowns

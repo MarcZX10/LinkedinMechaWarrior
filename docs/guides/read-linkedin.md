@@ -58,9 +58,11 @@ The time comes from the random pauses between requests (see
 
 ## JSON output
 
-Every command that shows data accepts `--json` (`me`, `feed`, `auth status`,
-`limits`, `identity show`, `har inspect`, `post draft` and `post publish`).
-It can go before or after the command name.
+Every command that shows data accepts `--json`: `me`, `feed`, `profile`,
+`post show`, `messages`, `invitations`, `connections`, `notifications`,
+`search`, `company`, `jobs`, and also `auth status`, `limits`,
+`identity show`, `har inspect` and the commands that change something, which
+print what they did. It can go before or after the command name.
 
 ```bash
 lmw me --json
@@ -154,6 +156,13 @@ lmw feed -n 20 --json | ConvertFrom-Json | Where-Object { -not $_.promoted } | F
 > If you schedule `lmw` (cron, Task Scheduler), keep it to a few runs a day at
 > irregular times. A job that fetches the feed every 10 minutes is exactly the
 > kind of pattern that gets accounts restricted, budgets or not.
+
+## More to read
+
+- Profiles, messages, invitations, connections and notifications:
+  [People, messages and your network](people-and-messages.md).
+- Posts with their comments and reactions, search, companies and jobs:
+  [React, comment and search](posts-and-search.md).
 
 ## Anything else: `api get`
 

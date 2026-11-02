@@ -43,6 +43,13 @@ settings it offers, and in which order. Servers can tell a real Chrome from a
 script by it. `lmw` reproduces Chrome's fingerprint (its JA4 and HTTP/2
 fingerprints are identical to a real Chromium's).
 
+## GraphQL query
+
+How most pages of LinkedIn's website read their data today. Each query is
+named by a `queryId` like `messengerConversations.9501074288a12f3ae9e3c7ea243bccbf`:
+a name and a version hash that changes when LinkedIn updates the page.
+`lmw har learn` picks up the current versions from a [HAR file](#har-file).
+
 ## HAR file
 
 "HTTP Archive". A file your browser's developer tools can save, with every
@@ -73,6 +80,12 @@ LinkedIn's session cookie. Whoever has it is logged in as you, so treat it
 like a password. It usually lasts months, until you log out in the browser
 or LinkedIn ends the session.
 
+## MCP
+
+The [Model Context Protocol](https://modelcontextprotocol.io/), which lets AI
+assistants call tools. `lmw mcp` offers `lmw`'s operations as MCP tools; see
+[Use lmw from an AI assistant](guides/ai-assistants.md).
+
 ## Normalized JSON
 
 The response format of LinkedIn's internal API: the main data plus a flat
@@ -83,6 +96,12 @@ it when using `lmw api get` or extending `lmw`.
 
 The random pause `lmw` takes before each request (2 to 6 seconds, sometimes
 longer), so that its activity never has a machine-like rhythm.
+
+## Server-driven UI
+
+Pages that LinkedIn's server sends as ready-made UI (a React Server Components
+stream) rather than as data. Contact info is one; `lmw` reads the fields it
+needs from the stream.
 
 ## Session
 

@@ -9,7 +9,8 @@ and follow the fix. Errors start with `lmw:`; parts in `<angle brackets>` vary.
 
 **Jump to:** [Session](#session) · [Importing](#importing) ·
 [LinkedIn pushed back](#linkedin-pushed-back) · [Unexpected answers](#unexpected-answers-from-linkedin) ·
-[Posts](#posts) · [Keyring and files](#keyring-and-files) ·
+[Posts](#posts) · [Messages, network and interactions](#messages-network-and-interactions) ·
+[Keyring and files](#keyring-and-files) ·
 [Configuration](#configuration) · [Other situations](#other-situations) ·
 [Exit codes](#exit-codes)
 
@@ -60,6 +61,8 @@ endpoint or a response format changed.
 | `LinkedIn API returned HTTP <status> for <url>: <start of the answer>` | LinkedIn rejected the request. `404` or `410`: the endpoint moved. `400`: it expects different parameters or body. `403` without "challenge": not allowed for this account. `500`: a problem on LinkedIn's side. | For `5xx`, retry later. Otherwise follow [Extend lmw](guides/extend-lmw.md) to find what the website calls now. |
 | `expected JSON from <url> but got <type>: ...` | LinkedIn returned a web page instead of data, often a login or error page. | Run `lmw auth status`; if the session is fine, the endpoint probably changed. |
 | `unexpected response from /me: no profile found. ...` | `/me` answered, but not in the expected format. | Look at it with `lmw api get /me` and see [Extend lmw](guides/extend-lmw.md). |
+| `LinkedIn no longer accepts the versions of its <query> query that lmw knows ...` | LinkedIn updated the page that uses this GraphQL query and answers 400 to every version `lmw` tried. | Record a HAR while the matching page loads (your inbox, a post's comments, a search...) and run `lmw har learn FILE`. |
+| `LinkedIn's answer was not the contact info overlay; its format may have changed` | The contact info page came back in an unexpected format. | Look at the profile in your browser; if the website shows the contact info, the format changed and needs an update to `lmw`. |
 | `request to <url> failed: <network error>` | No answer at all: no internet, DNS, firewall, proxy, timeout. | Check your connection. Corporate networks may block or intercept LinkedIn. Increase `LMW_REQUEST_TIMEOUT` on slow links. |
 | `No posts found. If your feed is not empty, ...` (not an error) | The feed request worked, but no post could be read from the answer. | Check the website. If your feed has posts, record a HAR of it and compare with `lmw har inspect`. |
 
@@ -77,6 +80,21 @@ endpoint or a response format changed.
 | `the idea is too short to build a useful post` | Fewer than 8 characters. | Describe the idea in a few words. |
 | `unsupported tone "<x>"; use one of: ...` / `unsupported length "<x>"; ...` | Unknown `--tone` or `--length`. | Use one of the listed values. |
 | `Cancelled; nothing was published.` (not an error) | You typed something other than `publish`. | Run it again and type `publish` exactly. |
+
+## Messages, network and interactions
+
+| Message | What it means | Fix |
+|---|---|---|
+| `"<x>" is not a LinkedIn profile; use its address ...` | The argument isn't a profile address, name or member URN. | Paste the profile's address, e.g. `https://www.linkedin.com/in/ada-lovelace/`. |
+| `"<x>" is not a LinkedIn post; use its address or URN ...` | Same, for posts. | Copy the post's link, or take its `urn` from `lmw feed --json`. |
+| `"<x>" is not a LinkedIn conversation; ...` | Same, for conversations. | Use an id from `lmw messages`. |
+| `no received invitation with id <id>; ...` | The invitation is not among your pending ones (answered already, withdrawn, or a sent one). | List them with `lmw invitations`. |
+| `the note is <n> characters long; LinkedIn allows 300` | `connect --note` is too long. | Shorten it. |
+| `unknown reaction "<x>"; use one of: ...` | `post react --type` with an unknown reaction. | Use `like`, `celebrate`, `support`, `love`, `insightful` or `funny`. |
+| `... The comment may have been posted anyway: check the post before trying again` | LinkedIn answered with a server error to a comment, which it sometimes does after creating it. | Look at the post before commenting again. |
+| `use either --to PROFILE or --conversation ID` | `messages send` needs exactly one destination. | Pick one. |
+| `cannot search "<x>"; use people, companies, schools or groups` | Posts and other types can't be searched. | Use one of those; for jobs, `lmw jobs search`. |
+| `Cancelled; nothing was changed on LinkedIn.` (not an error) | You typed something other than the confirmation word. | Run it again and type the word shown. |
 
 ## Keyring and files
 

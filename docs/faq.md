@@ -89,13 +89,22 @@ browser's session avoids both.
 
 ### Can it send messages, read notifications or search people?
 
-Not yet. Notifications, messages, profiles and invitations are next. Bulk
+Yes: `lmw messages`, `lmw notifications`, `lmw search`, `lmw profile`,
+`lmw invitations` and `lmw connect`. See
+[People, messages and your network](guides/people-and-messages.md). Bulk
 features (mass messages, invitations, scraping search results) will not be
 added, because they are what gets accounts restricted.
 
 ### Can I react to or comment on posts?
 
-Not yet. Every post in `lmw feed` has a link; open it to react or comment.
+Yes: `lmw post react` and `lmw post comment`, after you confirm. See
+[React, comment and search](guides/posts-and-search.md).
+
+### Can an AI assistant use it?
+
+Yes. `lmw mcp` lets assistants such as Claude Code use `lmw` through the Model
+Context Protocol, read-only by default. See
+[Use lmw from an AI assistant](guides/ai-assistants.md).
 
 ### Can it schedule posts?
 
@@ -109,6 +118,8 @@ easy to spot on LinkedIn; a good structure plus your own words is not.
 
 ### LinkedIn changed something and a command broke. What now?
 
-See [Extend lmw](guides/extend-lmw.md): record what the website does, compare,
-and fix the endpoint or parser. `lmw api get` and `lmw har inspect` make this
-quick.
+If the error mentions a GraphQL query, record a HAR on the page that shows the
+same data and run `lmw har learn FILE`: `lmw` picks up the version the website
+uses now. Otherwise see [Extend lmw](guides/extend-lmw.md): record what the
+website does, compare, and fix the endpoint or parser. `lmw api get` and
+`lmw har inspect` make this quick.

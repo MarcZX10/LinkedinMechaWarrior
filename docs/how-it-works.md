@@ -129,6 +129,41 @@ stateDiagram-v2
 - Cookie stores of installed browsers are read with
   [kooky](https://github.com/browserutils/kooky).
 
+## GraphQL queries and server-driven pages
+
+Most of the website no longer reads plain REST endpoints:
+
+- **GraphQL queries** serve comments, reactions, search, messages and members'
+  posts. Each is named by a `queryId` such as
+  `voyagerSearchDashClusters.b0928897…`, whose hash changes when LinkedIn
+  deploys a new version of the page. `lmw` keeps the hashes known to work for
+  each query and tries the next one when LinkedIn answers HTTP 400. Hashes
+  learned from a HAR with `lmw har learn` are tried first. They are matched by
+  query name *and* the variables sent, because some queries share a name (the
+  same `voyagerSocialDashReactions` lists, adds and removes reactions).
+- **Server-driven UI** (`/flagship-web/rsc-action/actions/...`) serves a few
+  pages, like contact info, as a React Server Components stream instead of
+  JSON. `lmw` posts the same request the website does and reads the fields it
+  needs out of the stream.
+
+## The MCP server
+
+`lmw mcp` speaks the [Model Context Protocol](https://modelcontextprotocol.io/)
+over stdin and stdout (JSON-RPC 2.0, one message per line), so AI assistants
+can call `lmw`'s operations as tools. It is part of the same binary and calls
+the same code as the commands, through the same session, pacing, budgets and
+cooldowns.
+
+- Tools that change something on LinkedIn are only listed when the server is
+  started with `--allow-write`.
+- When the client supports *elicitation*, `lmw` sends the person the exact
+  text that will be posted or sent and waits for them to accept before doing
+  anything.
+- Calls are handled one at a time; a cancellation from the client stops the
+  request in flight.
+
+See [Use lmw from an AI assistant](guides/ai-assistants.md).
+
 ## Testing
 
 `go test ./...` never contacts LinkedIn:

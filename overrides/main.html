@@ -1,0 +1,93 @@
+{#- Theme overrides for the documentation site: an announcement bar, and a
+    cockpit-style hero on the home page, which also hides the sidebars there
+    (they stay available in the mobile drawer). -#}
+{% extends "base.html" %}
+
+{% block announce %}
+  <a class="lmw-announce" href="{{ 'guides/ai-assistants/' | url }}">
+    <span class="lmw-announce__tag">NEW IN 0.4</span>
+    An AI co-pilot: dock lmw into Claude Code with
+    <code>claude mcp add linkedin -- lmw mcp</code> →
+  </a>
+{% endblock %}
+
+{% block tabs %}
+  {{ super() }}
+  {% if page and page.is_homepage %}
+    <section class="lmw-hero" data-md-color-scheme="slate">
+      <div class="lmw-hero__grid"></div>
+      <div class="lmw-hero__scan"></div>
+      <div class="md-grid lmw-hero__inner">
+        <div class="lmw-hero__copy">
+          <p class="lmw-hero__unit">UNIT LMW-01 // PILOT: YOU</p>
+          <h1 class="lmw-hero__title">Pilot your LinkedIn<br><span>from the terminal.</span></h1>
+          <p class="lmw-hero__lead">
+            One static binary for Linux and Windows. No browser, no login, paced like a
+            human, armored like a mech. Read, post, message, connect and search, and
+            hand the controls to an AI co-pilot over MCP.
+          </p>
+          <div class="lmw-hero__actions">
+            <a href="{{ 'getting-started/' | url }}" class="md-button md-button--primary">🚀 Launch sequence</a>
+            <a href="{{ 'guides/ai-assistants/' | url }}" class="md-button">🤖 AI co-pilot</a>
+            <a href="https://github.com/MarcZX10/LinkedinMechaWarrior/releases/latest" class="md-button">⬇ Download</a>
+          </div>
+          <ul class="lmw-hero__status">
+            <li><i class="ok"></i>SESSION <b class="ok">ONLINE</b></li>
+            <li><i class="ok"></i>TLS <b class="ok">CHROME MATCH</b></li>
+            <li><i class="ok"></i>PACING <b class="ok">HUMAN</b></li>
+            <li><i class="ok"></i>SAFETY <b class="ok">ON</b></li>
+            <li><i class="amber"></i>AI CO-PILOT <b class="amber">MCP READY</b></li>
+            <li><i class="off"></i>BULK MODE <b class="off">DISABLED</b></li>
+          </ul>
+        </div>
+        <div class="lmw-term" aria-hidden="true">
+          <div class="lmw-term__bar"><i></i><i></i><i></i><span>lmw · cockpit</span></div>
+          <div class="lmw-term__body">
+            <p style="--d:1"><span class="p">$</span> lmw me</p>
+            <p style="--d:2" class="out">Ada Lovelace</p>
+            <p style="--d:2" class="out dim">Mathematician · Writing the first program</p>
+            <p style="--d:3"><span class="p">$</span> lmw messages -n 1</p>
+            <p style="--d:4" class="out"><span class="amber">•</span> Grace Hopper · 2026-11-02</p>
+            <p style="--d:4" class="out dim">  Grace Hopper: See you at the conference!</p>
+            <p style="--d:5"><span class="p">$</span> lmw post react urn:li:activity:7123… --type celebrate</p>
+            <p style="--d:6" class="out">React "celebrate" to urn:li:activity:7123….</p>
+            <p style="--d:7" class="out amber">Type 'react' to go ahead: react</p>
+            <p style="--d:8" class="out ok">Reacted celebrate.</p>
+            <p style="--d:9"><span class="p">$</span> <span class="lmw-cursor">█</span></p>
+          </div>
+        </div>
+      </div>
+      <div class="md-grid lmw-stats">
+        <div><b>47</b><span>commands</span></div>
+        <div><b>31</b><span>MCP tools</span></div>
+        <div><b>0</b><span>browsers launched</span></div>
+        <div><b>2–6 s</b><span>between requests</span></div>
+        <div><b>1</b><span>static binary</span></div>
+      </div>
+    </section>
+  {% endif %}
+{% endblock %}
+
+{% block site_nav %}
+  {% if page and page.is_homepage %}
+    {% if nav %}
+      <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" hidden>
+        <div class="md-sidebar__scrollwrap">
+          <div class="md-sidebar__inner">
+            {% include "partials/nav.html" %}
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  {% else %}
+    {{ super() }}
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  {% if page and page.is_homepage %}
+    <div class="lmw-home">{% include "partials/content.html" %}</div>
+  {% else %}
+    {{ super() }}
+  {% endif %}
+{% endblock %}
