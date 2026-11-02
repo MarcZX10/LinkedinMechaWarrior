@@ -88,6 +88,7 @@ Even then, nothing is posted or sent behind your back:
 | `get_profile`, `get_profile_posts`, `get_contact_info` | A member's profile, posts and contact info | |
 | `get_post`, `get_post_comments`, `get_post_reactions` | A post, its comments and who reacted | |
 | `list_conversations`, `get_conversation` | Your inbox and the messages of a conversation | |
+| `get_unread_counts` | Unread notifications, messages and invitations, by the top bar badges | |
 | `get_notifications` | Your notifications | |
 | `list_invitations`, `list_connections` | Connection requests and your connections | |
 | `search` | People, companies, schools or groups | |

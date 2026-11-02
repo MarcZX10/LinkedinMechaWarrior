@@ -108,6 +108,26 @@ lmw connections remove ada-lovelace
 - Each of these asks you to type a word (`accept`, `connect`, `remove`...)
   before it changes anything.
 
+## Unread counts
+
+```bash
+lmw unread
+```
+
+```text
+Notifications  3
+Messages       1
+My network     2
+```
+
+These are the badges of LinkedIn's top bar, read with one request, and
+reading them marks nothing as seen. Add `--folders` to count unread
+conversations in each message folder (two more requests):
+
+```text
+Unread conversations: inbox 1, other 0, requests 1, archive 0, spam 0
+```
+
 ## Notifications
 
 ```bash

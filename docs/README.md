@@ -105,6 +105,7 @@ lmw auth import --har linkedin.har      # connect your account (once)
 lmw me                                  # who am I logged in as?
 lmw feed -n 20                          # read the feed
 lmw messages                            # your latest conversations
+lmw unread                              # how many unread notifications and messages
 lmw notifications                       # what happened lately
 lmw search people grace hopper          # find someone
 lmw post publish --text-file post.txt   # publish a post (asks first)

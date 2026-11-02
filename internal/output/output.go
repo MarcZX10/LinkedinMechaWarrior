@@ -279,6 +279,25 @@ func Notifications(notifications []api.Notification) string {
 	return strings.Join(blocks, "\n\n")
 }
 
+// Unread formats the badge counts, then unread conversations by folder.
+func Unread(u api.Unread) string {
+	lines := []string{
+		fmt.Sprintf("Notifications  %d", u.Notifications),
+		fmt.Sprintf("Messages       %d", u.Messages),
+		fmt.Sprintf("My network     %d", u.Network),
+	}
+	if len(u.Folders) > 0 {
+		var folders []string
+		for _, name := range []string{"inbox", "other", "requests", "archive", "spam"} {
+			if n, ok := u.Folders[name]; ok {
+				folders = append(folders, fmt.Sprintf("%s %d", name, n))
+			}
+		}
+		lines = append(lines, "", "Unread conversations: "+strings.Join(folders, ", "))
+	}
+	return strings.Join(lines, "\n")
+}
+
 // Comments formats comments with their authors.
 func Comments(comments []api.Comment) string {
 	width := Width()

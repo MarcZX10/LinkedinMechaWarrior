@@ -231,6 +231,32 @@ func (a *app) notificationsCommand() *cobra.Command {
 	return cmd
 }
 
+func (a *app) unreadCommand() *cobra.Command {
+	var folders bool
+	cmd := &cobra.Command{
+		Use:   "unread",
+		Short: "Count unread notifications, messages and invitations",
+		Long: "Count what waits for you, as the badges of LinkedIn's top bar show it (one request).\n" +
+			"With --folders, also count unread conversations in each message folder (two more requests).",
+		Args: exactArgs(0, "no arguments"),
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			unread, err := fetch(a, func(c *voyager.Client) (api.Unread, error) {
+				return api.UnreadCounts(cmd.Context(), c, folders)
+			})
+			if err != nil {
+				return err
+			}
+			if a.jsonOut {
+				return output.JSON(a.stdout, unread)
+			}
+			a.printf("%s\n", output.Unread(unread))
+			return nil
+		},
+	}
+	cmd.Flags().BoolVar(&folders, "folders", false, "also count unread conversations by message folder")
+	return cmd
+}
+
 func firstNonEmptyString(values ...string) string {
 	for _, v := range values {
 		if v != "" {
@@ -243,6 +269,16 @@ func firstNonEmptyString(values ...string) string {
 func (a *app) mcpNetworkTools() []mcp.Tool {
 	invitationID := mcp.Param{Name: "invitation_id", Type: "string", Required: true, Description: "the invitation id from list_invitations"}
 	return []mcp.Tool{
+		{
+			Name:        "get_unread_counts",
+			Title:       "Unread counts",
+			Description: "How many unread notifications, messages and network invitations wait for the person, as LinkedIn's top bar badges show them. Cheap (one request): check it before reading notifications or messages.",
+			ReadOnly:    true,
+			Params:      []mcp.Param{{Name: "folders", Type: "boolean", Description: "also count unread conversations by message folder (inbox, other, requests, archive, spam); two more requests"}},
+			Run: func(ctx context.Context, args mcp.Args) (any, error) {
+				return fetch(a, func(c *voyager.Client) (api.Unread, error) { return api.UnreadCounts(ctx, c, args.Bool("folders")) })
+			},
+		},
 		{
 			Name:        "get_notifications",
 			Title:       "Notifications",

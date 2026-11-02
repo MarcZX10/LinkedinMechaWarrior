@@ -150,6 +150,7 @@ nav:
           - reference/lmw_messages_send.md
           - reference/lmw_messages_show.md
           - reference/lmw_notifications.md
+          - reference/lmw_unread.md
           - reference/lmw_invitations.md
           - reference/lmw_invitations_accept.md
           - reference/lmw_invitations_ignore.md

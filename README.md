@@ -88,6 +88,7 @@ lmw doctor --online                       # preflight checks
 lmw me                                    # who's in the cockpit
 lmw feed -n 20                            # what's on the radar
 lmw messages                              # incoming transmissions
+lmw unread                                # blips on the radar: what's unread
 lmw notifications                         # alerts
 lmw post publish --text-file post.txt     # fire, after you confirm
 ```
@@ -147,7 +148,7 @@ flowchart LR
     armor ==> li[(LinkedIn)]
 ```
 
-- **35 tools**: feed, profiles, posts with images and polls, comments and
+- **36 tools**: unread counts, feed, profiles, posts with images and polls, comments and
   replies, reactions, messages, notifications, invitations, connections,
   search, companies, jobs and your job tracker, saved posts, budgets.
 - **Read-only by default.** Tools that change something only exist with

@@ -703,7 +703,7 @@ func TestMCPOffersEveryFeature(t *testing.T) {
 	}
 	for _, want := range []string{
 		"get_my_profile", "get_feed", "get_profile", "get_profile_posts", "get_contact_info", "get_post", "get_post_comments",
-		"get_post_reactions", "list_conversations", "get_conversation", "get_notifications", "list_invitations", "list_connections",
+		"get_post_reactions", "list_conversations", "get_conversation", "get_notifications", "get_unread_counts", "list_invitations", "list_connections",
 		"search", "get_company", "search_jobs", "get_job", "get_saved_posts", "get_tracked_jobs", "get_request_budget", "linkedin_api_get",
 		"publish_post", "edit_post", "comment_on_post", "reply_to_comment", "react_to_post", "remove_reaction", "delete_post", "send_message", "mark_conversation_read",
 		"answer_invitation", "withdraw_invitation", "send_connection_request", "remove_connection", "set_following",
@@ -763,5 +763,19 @@ func TestHARFindAsksBeforeLookingAndAutoUsesTheNewest(t *testing.T) {
 	}
 	if code, _, _ := h.run("no\n", "har", "learn", "auto"); code != 2 {
 		t.Errorf("har learn auto without permission should be a usage error, exit %d", code)
+	}
+}
+
+func TestUnreadCountsTheTopBarBadges(t *testing.T) {
+	h := newHarness(t)
+	h.importPasted()
+	h.linkedin.replies["/voyagerNotificationsDashBadgingItemCounts"] = reply{status: 200, body: `{"data":{"elements":[` +
+		`{"count":3,"badgingItem":"NOTIFICATIONS"},{"count":1,"badgingItem":"MESSAGING"},{"count":2,"badgingItem":"MY_NETWORK"}]},"included":[]}`}
+	code, out, errOut := h.run("", "unread")
+	if code != 0 || !strings.Contains(out, "Notifications  3") || !strings.Contains(out, "Messages       1") || !strings.Contains(out, "My network     2") {
+		t.Fatalf("exit %d\n%s\n%s", code, out, errOut)
+	}
+	if strings.Contains(out, "Unread conversations") {
+		t.Errorf("folders shown without --folders:\n%s", out)
 	}
 }

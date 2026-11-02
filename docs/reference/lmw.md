@@ -44,4 +44,5 @@ Start with `lmw auth import`.
 * [lmw profile](lmw_profile.md)	 - Look at a member's profile, contact info and posts
 * [lmw saved](lmw_saved.md)	 - Show the posts you saved
 * [lmw search](lmw_search.md)	 - Search people, companies, schools or groups
+* [lmw unread](lmw_unread.md)	 - Count unread notifications, messages and invitations
 

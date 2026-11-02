@@ -342,3 +342,27 @@ func TestPostsWithTheirOwnThreadCostOneRequest(t *testing.T) {
 		t.Errorf("%d requests, %v", len(r.calls), err)
 	}
 }
+
+func TestUnreadCounts(t *testing.T) {
+	r := &routes{replies: map[string]string{
+		"/voyagerNotificationsDashBadgingItemCounts": `{"data":{"elements":[{"count":4,"badgingItem":"NOTIFICATIONS"},{"count":2,"badgingItem":"MESSAGING"},` +
+			`{"count":1,"badgingItem":"MY_NETWORK"},{"count":5,"badgingItem":"NURTURE"}]},"included":[]}`,
+		"/me": `{"data":{"*miniProfile":"urn:li:fs_miniProfile:ACoAAA"},"included":[{"entityUrn":"urn:li:fs_miniProfile:ACoAAA","firstName":"Ada","publicIdentifier":"ada"}]}`,
+		"/voyagerMessagingGraphQL/graphql#messengerMailboxCounts": `{"data":{"messengerMailboxCountsByMailbox":{"elements":[` +
+			`{"category":"PRIMARY_INBOX","unreadConversationCount":2},{"category":"MESSAGE_REQUEST_PENDING","unreadConversationCount":1},{"category":"INBOX","unreadConversationCount":3}]}}}`,
+	}}
+	u, err := UnreadCounts(context.Background(), r, false)
+	if err != nil || u.Notifications != 4 || u.Messages != 2 || u.Network != 1 || u.Other["nurture"] != 5 || u.Folders != nil {
+		t.Fatalf("unread %+v, %v", u, err)
+	}
+	if len(r.calls) != 1 {
+		t.Errorf("badges took %d requests", len(r.calls))
+	}
+	u, err = UnreadCounts(context.Background(), r, true)
+	if err != nil || u.Folders["inbox"] != 2 || u.Folders["requests"] != 1 || len(u.Folders) != 2 {
+		t.Fatalf("folders %+v, %v", u.Folders, err)
+	}
+	if vars := r.last(t).param("variables"); vars != "(mailboxUrn:urn%3Ali%3Afsd_profile%3AACoAAA)" {
+		t.Errorf("mailbox variables %s", vars)
+	}
+}
