@@ -41,7 +41,7 @@ lmw auth import [flags]
 
 ```
       --browser string[="any"]   read cookies from an installed browser (optionally by name: chrome, firefox, edge...)
-      --har string               read cookies and browser identity from a HAR file
+      --har string[="auto"]      read cookies and browser identity from a HAR file (without a file: find the newest, asking first)
   -h, --help                     help for import
       --no-verify                save without checking the session with LinkedIn
 ```

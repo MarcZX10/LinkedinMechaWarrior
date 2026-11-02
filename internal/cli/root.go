@@ -20,6 +20,7 @@ import (
 	"github.com/MarcZX10/LinkedinMechaWarrior/internal/auth"
 	"github.com/MarcZX10/LinkedinMechaWarrior/internal/config"
 	"github.com/MarcZX10/LinkedinMechaWarrior/internal/errs"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/har"
 	"github.com/MarcZX10/LinkedinMechaWarrior/internal/identity"
 	"github.com/MarcZX10/LinkedinMechaWarrior/internal/pacing"
 	"github.com/MarcZX10/LinkedinMechaWarrior/internal/session"
@@ -43,6 +44,8 @@ type app struct {
 	newPacer     func(config.Config) *pacing.Pacer
 	newStore     func(config.Config) session.Store
 	findSessions func(context.Context, string) ([]auth.Candidate, error)
+	// harPlaces lists the folders `har find` and "auto" HAR files look in.
+	harPlaces func() []har.Place
 }
 
 // Main runs lmw with the process arguments and returns the exit code.
@@ -63,6 +66,7 @@ func Main() int {
 		},
 		newStore:     func(cfg config.Config) session.Store { return session.NewStore(cfg.SessionStore, cfg.SessionFile()) },
 		findSessions: auth.FindSessions,
+		harPlaces:    defaultHARPlaces,
 	}
 	return a.run(ctx, os.Args[1:])
 }

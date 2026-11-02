@@ -44,6 +44,7 @@ The file contains private data such as messages; don't share it as-is.
 ### SEE ALSO
 
 * [lmw](lmw.md)	 - A command-line client for LinkedIn
+* [lmw har find](lmw_har_find.md)	 - Look for HAR files of LinkedIn where your browser saves files (asks first)
 * [lmw har inspect](lmw_har_inspect.md)	 - List the LinkedIn API calls in a HAR file, or show one
 * [lmw har learn](lmw_har_learn.md)	 - Learn the current versions of LinkedIn's GraphQL queries from a HAR file
 

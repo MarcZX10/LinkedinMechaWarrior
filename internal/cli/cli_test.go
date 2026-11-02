@@ -16,6 +16,7 @@ import (
 
 	"github.com/MarcZX10/LinkedinMechaWarrior/internal/auth"
 	"github.com/MarcZX10/LinkedinMechaWarrior/internal/config"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/har"
 	"github.com/MarcZX10/LinkedinMechaWarrior/internal/identity"
 	"github.com/MarcZX10/LinkedinMechaWarrior/internal/pacing"
 	"github.com/MarcZX10/LinkedinMechaWarrior/internal/session"
@@ -65,12 +66,15 @@ type harness struct {
 	sessions []auth.Candidate
 	// browserAsked is the browser name passed to the cookie search.
 	browserAsked string
+	// harDir is the only folder `har find` and "auto" look in.
+	harDir string
 }
 
 func newHarness(t *testing.T) *harness {
 	return &harness{
 		t:        t,
 		stateDir: t.TempDir(),
+		harDir:   t.TempDir(),
 		linkedin: &fakeLinkedIn{replies: map[string]reply{
 			"/me":                         {status: 200, body: meJSON},
 			"/feed/updatesV2":             {status: 200, body: feedJSON},
@@ -98,7 +102,8 @@ func (h *harness) run(stdin string, args ...string) (int, string, string) {
 			p.Sleep = func(time.Duration) {}
 			return p
 		},
-		newStore: func(cfg config.Config) session.Store { return session.FileStore{Path: cfg.SessionFile()} },
+		newStore:  func(cfg config.Config) session.Store { return session.FileStore{Path: cfg.SessionFile()} },
+		harPlaces: func() []har.Place { return []har.Place{{Label: "Downloads", Dir: h.harDir}} },
 		findSessions: func(_ context.Context, browser string) ([]auth.Candidate, error) {
 			h.browserAsked = browser
 			return h.sessions, nil
@@ -725,5 +730,38 @@ func TestSavedPostsAndTrackedJobs(t *testing.T) {
 	}
 	if code, _, _ := h.run("", "jobs", "tracked", "--stage", "nope"); code != 2 {
 		t.Error("an unknown stage should be a usage error")
+	}
+}
+
+func TestHARFindAsksBeforeLookingAndAutoUsesTheNewest(t *testing.T) {
+	h := newHarness(t)
+	entry := func(url string) map[string]any {
+		return map[string]any{
+			"request": map[string]any{"method": "GET", "url": url, "headers": []any{
+				map[string]string{"name": "User-Agent", "value": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36"},
+				map[string]string{"name": "Cookie", "value": `li_at=found; JSESSIONID="ajax:7"`},
+			}},
+			"response": map[string]any{"status": 200, "content": map[string]any{"text": "{}"}},
+		}
+	}
+	saved, _ := json.Marshal(map[string]any{"log": map[string]any{"entries": []any{entry("https://www.linkedin.com/voyager/api/me")}}})
+	_ = os.WriteFile(filepath.Join(h.harDir, "www.linkedin.com.har"), saved, 0o600)
+	_ = os.WriteFile(filepath.Join(h.harDir, "other.har"), []byte(`{"log":{"entries":[]}}`), 0o600)
+
+	out := h.mustRun("no\n", "har", "find")
+	if !strings.Contains(out, h.harDir) || !strings.Contains(out, "no folder was read") || strings.Contains(out, "www.linkedin.com.har") {
+		t.Errorf("har find must show the folders and stop without permission:\n%s", out)
+	}
+	out = h.mustRun("yes\n", "har", "find")
+	if !strings.Contains(out, "1. "+filepath.Join(h.harDir, "www.linkedin.com.har")) || strings.Contains(out, "other.har") {
+		t.Errorf("har find:\n%s", out)
+	}
+
+	out = h.mustRun("yes\n", "auth", "import", "--har")
+	if !strings.Contains(out, "Using "+filepath.Join(h.harDir, "www.linkedin.com.har")) || !strings.Contains(out, "Logged in as Ada Lovelace") {
+		t.Errorf("auth import --har without a file:\n%s", out)
+	}
+	if code, _, _ := h.run("no\n", "har", "learn", "auto"); code != 2 {
+		t.Errorf("har learn auto without permission should be a usage error, exit %d", code)
 	}
 }

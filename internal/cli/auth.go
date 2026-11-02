@@ -54,15 +54,20 @@ The session is checked with one API request and stored in the system keyring.`,
   # By pasting the cookies (DevTools > Application > Cookies)
   lmw auth import`,
 		Args: func(_ *cobra.Command, args []string) error {
-			// "--browser firefox" reaches us as "--browser" (optional value) plus an argument.
-			if len(args) > 1 || (len(args) == 1 && browser != "any") {
+			// "--browser firefox" and "--har FILE" reach us as the flag (optional value)
+			// plus an argument.
+			if len(args) > 1 || (len(args) == 1 && browser != "any" && harFile != autoHAR) {
 				return errs.New(errs.Usage, "unexpected argument %q; use --browser NAME, --har FILE or no flags", args[0])
 			}
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 1 {
-				browser = args[0]
+				if browser == "any" {
+					browser = args[0]
+				} else {
+					harFile = args[0]
+				}
 			}
 			if browser != "" && harFile != "" {
 				return errs.New(errs.Usage, "use either --browser or --har, not both")
@@ -97,7 +102,8 @@ The session is checked with one API request and stored in the system keyring.`,
 	}
 	cmd.Flags().StringVar(&browser, "browser", "", "read cookies from an installed browser (optionally by name: chrome, firefox, edge...)")
 	cmd.Flags().Lookup("browser").NoOptDefVal = "any"
-	cmd.Flags().StringVar(&harFile, "har", "", "read cookies and browser identity from a HAR file")
+	cmd.Flags().StringVar(&harFile, "har", "", "read cookies and browser identity from a HAR file (without a file: find the newest, asking first)")
+	cmd.Flags().Lookup("har").NoOptDefVal = autoHAR
 	cmd.Flags().BoolVar(&noVerify, "no-verify", false, "save without checking the session with LinkedIn")
 	return cmd
 }
@@ -105,7 +111,11 @@ The session is checked with one API request and stored in the system keyring.`,
 func (a *app) collectCookies(cmd *cobra.Command, browser, harFile string) (map[string]string, string, error) {
 	switch {
 	case harFile != "":
-		file, err := har.Load(harFile)
+		path, err := a.resolveHAR(harFile)
+		if err != nil {
+			return nil, "", err
+		}
+		file, err := har.Load(path)
 		if err != nil {
 			return nil, "", err
 		}

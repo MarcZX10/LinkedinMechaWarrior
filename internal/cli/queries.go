@@ -92,7 +92,11 @@ auth import --har learns them too.`,
 		Example: "  lmw har learn linkedin.har",
 		Args:    exactArgs(1, "one HAR file"),
 		RunE: func(_ *cobra.Command, args []string) error {
-			file, err := har.Load(args[0])
+			path, err := a.resolveHAR(args[0])
+			if err != nil {
+				return err
+			}
+			file, err := har.Load(path)
 			if err != nil {
 				return err
 			}

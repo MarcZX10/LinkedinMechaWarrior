@@ -108,7 +108,11 @@ The file contains private data such as messages; don't share it as-is.`,
 		Short: "List the LinkedIn API calls in a HAR file, or show one",
 		Args:  exactArgs(1, "one HAR file"),
 		RunE: func(_ *cobra.Command, args []string) error {
-			file, err := har.Load(args[0])
+			path, err := a.resolveHAR(args[0])
+			if err != nil {
+				return err
+			}
+			file, err := har.Load(path)
 			if err != nil {
 				return err
 			}
@@ -135,7 +139,7 @@ The file contains private data such as messages; don't share it as-is.`,
 	}
 	inspect.Flags().StringVar(&filter, "filter", "", "only calls whose URL contains this text")
 	inspect.Flags().IntVar(&show, "show", -1, "print the request and response of the entry with this index")
-	cmd.AddCommand(inspect, a.harLearnCommand())
+	cmd.AddCommand(inspect, a.harLearnCommand(), a.harFindCommand())
 	return cmd
 }
 
@@ -200,7 +204,11 @@ func (a *app) identityCommand() *cobra.Command {
 			Short: "Copy the identity of the browser that recorded a HAR file",
 			Args:  exactArgs(1, "one HAR file"),
 			RunE: func(_ *cobra.Command, args []string) error {
-				file, err := har.Load(args[0])
+				path, err := a.resolveHAR(args[0])
+				if err != nil {
+					return err
+				}
+				file, err := har.Load(path)
 				if err != nil {
 					return err
 				}
