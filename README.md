@@ -63,7 +63,7 @@ first sign of pushback from LinkedIn.
 or build it with Go:
 
 ```bash
-go install github.com/MarcZX100/LinkedinMechaWarrior/cmd/lmw@latest
+go install github.com/MarcZX10/LinkedinMechaWarrior/cmd/lmw@latest
 ```
 
 **2. Board.** Log in to LinkedIn in your browser as usual, save a HAR file from

@@ -12,7 +12,7 @@ import (
 	"github.com/browserutils/kooky"
 	_ "github.com/browserutils/kooky/browser/all" // register every supported browser
 
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/errs"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/errs"
 )
 
 // Candidate is a LinkedIn session found in one browser profile.

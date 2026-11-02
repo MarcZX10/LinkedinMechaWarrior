@@ -15,9 +15,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/errs"
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/identity"
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/normalized"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/errs"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/identity"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/normalized"
 )
 
 const voyagerPath = "/voyager/api/"

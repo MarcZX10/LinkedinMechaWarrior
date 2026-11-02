@@ -9,10 +9,10 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/api"
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/errs"
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/har"
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/output"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/api"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/errs"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/har"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/output"
 )
 
 // loadLearnedQueries reads the GraphQL query versions learned from HAR files.

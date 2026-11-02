@@ -4,8 +4,8 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/normalized"
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/voyager"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/normalized"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/voyager"
 )
 
 // Notification is one card of the notifications page.

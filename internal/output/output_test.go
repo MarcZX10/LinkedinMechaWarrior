@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/api"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/api"
 )
 
 func TestWrapKeepsParagraphsAndWidth(t *testing.T) {

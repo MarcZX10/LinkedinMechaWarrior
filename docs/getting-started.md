@@ -61,7 +61,7 @@ Windows SmartScreen may warn about an unknown publisher the first time: choose
 With [Go](https://go.dev/dl/) installed:
 
 ```bash
-go install github.com/MarcZX100/LinkedinMechaWarrior/cmd/lmw@latest
+go install github.com/MarcZX10/LinkedinMechaWarrior/cmd/lmw@latest
 ```
 
 </details>

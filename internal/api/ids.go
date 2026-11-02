@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/errs"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/errs"
 )
 
 // Commands accept what people copy from the browser: a profile, post,

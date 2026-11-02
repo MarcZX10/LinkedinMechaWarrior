@@ -25,9 +25,9 @@ import (
 	tlsclient "github.com/bogdanfinn/tls-client"
 	"github.com/bogdanfinn/tls-client/profiles"
 
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/errs"
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/identity"
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/session"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/errs"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/identity"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/session"
 )
 
 const (

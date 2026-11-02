@@ -11,7 +11,7 @@ import (
 
 	"golang.org/x/term"
 
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/api"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/api"
 )
 
 const (

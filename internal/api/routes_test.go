@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/voyager"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/voyager"
 )
 
 // call is one request made through routes.

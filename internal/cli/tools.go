@@ -7,11 +7,11 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/errs"
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/har"
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/identity"
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/output"
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/voyager"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/errs"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/har"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/identity"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/output"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/voyager"
 )
 
 func (a *app) apiCommand() *cobra.Command {

@@ -3,9 +3,9 @@ package cli
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/mcp"
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/version"
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/voyager"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/mcp"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/version"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/voyager"
 )
 
 const mcpInstructions = `lmw reads and acts on the person's own LinkedIn account through LinkedIn's internal web API, using the session they imported with ` + "`lmw auth import`" + `.

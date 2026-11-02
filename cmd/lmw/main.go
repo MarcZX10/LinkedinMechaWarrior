@@ -4,7 +4,7 @@ package main
 import (
 	"os"
 
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/cli"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/cli"
 )
 
 func main() {

@@ -175,8 +175,3 @@ nav:
           - reference/lmw_identity_import.md
           - reference/lmw_identity_reset.md
           - reference/lmw_identity_show.md
-
-extra:
-  social:
-    - icon: fontawesome/brands/github
-      link: https://github.com/MarcZX100/LinkedinMechaWarrior

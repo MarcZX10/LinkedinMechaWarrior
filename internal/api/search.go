@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/errs"
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/normalized"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/errs"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/normalized"
 )
 
 // SearchTypes maps what can be searched to LinkedIn's result types. Posts

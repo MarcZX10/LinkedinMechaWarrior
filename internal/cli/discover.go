@@ -7,10 +7,10 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/api"
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/mcp"
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/output"
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/voyager"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/api"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/mcp"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/output"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/voyager"
 )
 
 func searchTypes() []string {

@@ -1,4 +1,4 @@
-module github.com/MarcZX100/LinkedinMechaWarrior
+module github.com/MarcZX10/LinkedinMechaWarrior
 
 go 1.27.1
 

@@ -17,7 +17,7 @@ import (
 
 	"github.com/zalando/go-keyring"
 
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/errs"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/errs"
 )
 
 const (

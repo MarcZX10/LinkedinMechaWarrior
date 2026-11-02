@@ -16,15 +16,15 @@ import (
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
 
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/api"
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/auth"
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/config"
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/errs"
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/identity"
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/pacing"
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/session"
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/version"
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/voyager"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/api"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/auth"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/config"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/errs"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/identity"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/pacing"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/session"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/version"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/voyager"
 )
 
 // app holds what commands share. The function fields are replaced in tests.

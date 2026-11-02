@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/errs"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/errs"
 )
 
 type fakeClock struct {

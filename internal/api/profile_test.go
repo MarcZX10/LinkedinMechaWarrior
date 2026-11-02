@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/errs"
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/voyager"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/errs"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/voyager"
 )
 
 func TestParseProfileViewClassicShape(t *testing.T) {

@@ -8,9 +8,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/errs"
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/normalized"
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/voyager"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/errs"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/normalized"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/voyager"
 )
 
 // MaxComment is the longest comment LinkedIn accepts.

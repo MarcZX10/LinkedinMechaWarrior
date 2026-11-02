@@ -7,8 +7,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/errs"
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/voyager"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/errs"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/voyager"
 )
 
 // Contact info is only served as a server-driven UI overlay: one POST that

@@ -22,7 +22,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/errs"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/errs"
 )
 
 const (

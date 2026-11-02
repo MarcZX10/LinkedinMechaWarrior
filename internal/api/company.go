@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/errs"
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/normalized"
-	"github.com/MarcZX100/LinkedinMechaWarrior/internal/voyager"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/errs"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/normalized"
+	"github.com/MarcZX10/LinkedinMechaWarrior/internal/voyager"
 )
 
 // CompanyDecoration selects the full company page.
