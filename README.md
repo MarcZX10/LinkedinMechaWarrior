@@ -178,8 +178,12 @@ known versions of each and switches to the next when one is rejected. When
 they all fail, the error tells you, and a field repair takes one command:
 
 ```bash
+lmw doctor --probe               # which features work with your account today?
 lmw har learn linkedin.har       # learn the versions the website uses today
 ```
+
+`doctor --probe` reads a little of every feature, about a dozen paced
+requests, and stops at the first sign of pushback.
 
 For deeper repairs, `lmw har inspect` shows every call the website made and
 `lmw api get` reproduces them. [Extend lmw](docs/guides/extend-lmw.md) walks

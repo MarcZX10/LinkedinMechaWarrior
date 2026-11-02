@@ -5,7 +5,9 @@ and follow the fix. Errors start with `lmw:`; parts in `<angle brackets>` vary.
 
 > [!TIP]
 > Run the command again with `-v` to see every request `lmw` makes and the
-> status LinkedIn answers with: `lmw -v feed`.
+> status LinkedIn answers with: `lmw -v feed`. To see at once which features
+> work with your account, run `lmw doctor --probe`: it reads a little of each,
+> about a dozen paced requests, and says which ones failed and why.
 
 **Jump to:** [Session](#session) · [Importing](#importing) ·
 [LinkedIn pushed back](#linkedin-pushed-back) · [Unexpected answers](#unexpected-answers-from-linkedin) ·
