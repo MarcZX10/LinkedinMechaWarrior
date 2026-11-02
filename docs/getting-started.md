@@ -73,7 +73,7 @@ lmw --version
 ```
 
 ```text
-lmw 0.3.0
+lmw 0.4.0
 ```
 
 ## Step 2. Log in to LinkedIn in your browser
