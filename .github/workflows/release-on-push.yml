@@ -115,6 +115,15 @@ jobs:
               go vet ./...
               go test ./...
               CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o "dist/${BINARY_NAME}${SUFFIX}" ./cmd/lmw
+              # lmw needs no cgo, so the Linux job also builds for macOS and ARM.
+              if [ "$RUNNER_OS" = "Linux" ]; then
+                mkdir -p "${OUTPUT_DIR}/extra"
+                for target in darwin/arm64:lmw-macos-arm64 darwin/amd64:lmw-macos-x86_64 linux/arm64:lmw-linux-arm64; do
+                  goos_arch="${target%%:*}"
+                  GOOS="${goos_arch%/*}" GOARCH="${goos_arch#*/}" CGO_ENABLED=0 \
+                    go build -trimpath -ldflags="-s -w" -o "${OUTPUT_DIR}/extra/${target#*:}" ./cmd/lmw
+                done
+              fi
             fi
 
             if [ -z "$BASE_VERSION" ]; then
@@ -214,6 +223,11 @@ jobs:
             mkdir -p upload-assets
             cp "$LINUX_ASSET" upload-assets/lmw-linux
             cp "$WINDOWS_ASSET" upload-assets/lmw.exe
+            if [ -d "${ASSET_DIR}/extra" ]; then
+              cp "${ASSET_DIR}"/extra/* upload-assets/
+            fi
+            ASSETS=(upload-assets/*)
+            ASSET_LIST="$(for asset in "${ASSETS[@]}"; do printf -- '- `%s`\n' "$(basename "$asset")"; done)"
 
             if [ "$KIND" = "go" ]; then
               BUILD_NOTE="Static Go binary: no browser, Python or other runtime needed."
@@ -226,8 +240,7 @@ jobs:
           Automated release \`${VERSION}\` for commit \`${COMMIT_SHA}\` on branch \`${BRANCH}\`.
 
           Assets:
-          - \`lmw-linux\`
-          - \`lmw.exe\`
+          ${ASSET_LIST}
 
           Notes:
           - ${BUILD_NOTE}
@@ -242,8 +255,7 @@ jobs:
                 --notes-file "$NOTES_FILE" \
                 --prerelease="$PRERELEASE"
               gh release upload "$RELEASE_TAG" \
-                upload-assets/lmw-linux \
-                upload-assets/lmw.exe \
+                "${ASSETS[@]}" \
                 --repo "$REPOSITORY" \
                 --clobber
             else
@@ -252,8 +264,7 @@ jobs:
                 PRERELEASE_FLAG=(--prerelease)
               fi
               gh release create "$RELEASE_TAG" \
-                upload-assets/lmw-linux \
-                upload-assets/lmw.exe \
+                "${ASSETS[@]}" \
                 --repo "$REPOSITORY" \
                 --target "$COMMIT_SHA" \
                 --title "$RELEASE_TITLE" \
