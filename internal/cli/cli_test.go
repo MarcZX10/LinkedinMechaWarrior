@@ -406,3 +406,84 @@ func TestInterruptibleSleepStopsOnCancel(t *testing.T) {
 		t.Error("sleep was not interrupted")
 	}
 }
+
+// mcpSession runs `lmw mcp` with the given JSON-RPC lines and returns the
+// answers by id.
+func (h *harness) mcpSession(flags []string, lines ...string) map[float64]map[string]any {
+	h.t.Helper()
+	out := h.mustRun(strings.Join(lines, "\n")+"\n", append([]string{"mcp"}, flags...)...)
+	answers := map[float64]map[string]any{}
+	for _, line := range strings.Split(strings.TrimSpace(out), "\n") {
+		var msg map[string]any
+		if err := json.Unmarshal([]byte(line), &msg); err != nil {
+			h.t.Fatalf("stdout must only carry MCP messages, got %q", line)
+		}
+		id, _ := msg["id"].(float64)
+		answers[id] = msg
+	}
+	return answers
+}
+
+func mcpText(t *testing.T, msg map[string]any) (string, bool) {
+	t.Helper()
+	result, ok := msg["result"].(map[string]any)
+	if !ok {
+		t.Fatalf("no result in %v", msg)
+	}
+	return result["content"].([]any)[0].(map[string]any)["text"].(string), result["isError"] == true
+}
+
+func TestMCPServesReadToolsAndGuardsWrites(t *testing.T) {
+	h := newHarness(t)
+	h.importPasted()
+	before := len(h.linkedin.requests)
+	answers := h.mcpSession(nil,
+		`{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"test","version":"1"}}}`,
+		`{"jsonrpc":"2.0","method":"notifications/initialized"}`,
+		`{"jsonrpc":"2.0","id":2,"method":"tools/list"}`,
+		`{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"get_my_profile","arguments":{}}}`,
+		`{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"get_feed","arguments":{"limit":1}}}`,
+		`{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"publish_post","arguments":{"text":"Hello"}}}`,
+		`{"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"linkedin_api_get","arguments":{"path":"/me","query":"a=1"}}}`,
+	)
+	if info := answers[1]["result"].(map[string]any)["serverInfo"].(map[string]any); info["name"] != "lmw" {
+		t.Errorf("server info %v", info)
+	}
+	for _, tool := range answers[2]["result"].(map[string]any)["tools"].([]any) {
+		if tool.(map[string]any)["annotations"].(map[string]any)["readOnlyHint"] != true {
+			t.Errorf("write tool offered without --allow-write: %v", tool.(map[string]any)["name"])
+		}
+	}
+	if text, isError := mcpText(t, answers[3]); isError || !strings.Contains(text, `"name": "Ada Lovelace"`) {
+		t.Errorf("get_my_profile: %s", text)
+	}
+	if text, isError := mcpText(t, answers[4]); isError || !strings.Contains(text, `"author": "Grace Hopper"`) {
+		t.Errorf("get_feed: %s", text)
+	}
+	if text, isError := mcpText(t, answers[5]); !isError || !strings.Contains(text, "--allow-write") {
+		t.Errorf("publish_post without --allow-write: %s", text)
+	}
+	if text, isError := mcpText(t, answers[6]); isError || !strings.Contains(text, `"firstName": "Ada"`) {
+		t.Errorf("linkedin_api_get: %s", text)
+	}
+	for _, req := range h.linkedin.requests[before:] {
+		if req.Method != "GET" {
+			t.Errorf("a read-only session sent %s %s", req.Method, req.URL)
+		}
+	}
+
+	answers = h.mcpSession([]string{"--allow-write"},
+		`{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{}}}`,
+		`{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"publish_post","arguments":{"text":"Hi [fill this in]"}}}`,
+		`{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"publish_post","arguments":{"text":"Hello LinkedIn","visibility":"connections"}}}`,
+	)
+	if text, isError := mcpText(t, answers[2]); !isError || !strings.Contains(text, "placeholder") {
+		t.Errorf("placeholder post: %s", text)
+	}
+	if text, isError := mcpText(t, answers[3]); isError || !strings.Contains(text, "urn:li:activity:99") {
+		t.Errorf("publish_post: %s", text)
+	}
+	if last := h.linkedin.bodies[len(h.linkedin.bodies)-1]; !strings.Contains(last, `"visibleToConnectionsOnly":true`) {
+		t.Errorf("publish payload %s", last)
+	}
+}

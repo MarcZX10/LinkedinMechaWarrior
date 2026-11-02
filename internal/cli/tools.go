@@ -27,16 +27,12 @@ func (a *app) apiCommand() *cobra.Command {
 			"  lmw api get /feed/updatesV2 -p count=10 -p q=chronFeed -p start=0",
 		Args: exactArgs(1, "one API path, such as /me"),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var query voyager.Params
-			for _, item := range params {
-				key, value, ok := strings.Cut(item, "=")
-				if !ok || key == "" {
-					return errs.New(errs.Usage, "query parameters must look like KEY=VALUE, got %q", item)
-				}
-				query = append(query, voyager.Param{Key: key, Value: value})
+			query, err := parseParams(params)
+			if err != nil {
+				return err
 			}
 			var raw []byte
-			err := a.withClient(func(c *voyager.Client) (err error) {
+			err = a.withClient(func(c *voyager.Client) (err error) {
 				raw, err = c.Get(cmd.Context(), args[0], query)
 				return err
 			})
@@ -49,6 +45,29 @@ func (a *app) apiCommand() *cobra.Command {
 	get.Flags().StringArrayVarP(&params, "param", "p", nil, "query parameter as KEY=VALUE (repeatable)")
 	cmd.AddCommand(get)
 	return cmd
+}
+
+// parseParams reads KEY=VALUE query parameters, keeping their order.
+func parseParams(items []string) (voyager.Params, error) {
+	var query voyager.Params
+	for _, item := range items {
+		key, value, ok := strings.Cut(item, "=")
+		if !ok || key == "" {
+			return nil, errs.New(errs.Usage, "query parameters must look like KEY=VALUE, got %q", item)
+		}
+		query = append(query, voyager.Param{Key: key, Value: value})
+	}
+	return query, nil
+}
+
+// parseQuery reads a query string such as "count=10&q=chronFeed". Values are
+// passed on as written, so they may already be encoded.
+func parseQuery(query string) (voyager.Params, error) {
+	query = strings.TrimPrefix(strings.TrimSpace(query), "?")
+	if query == "" {
+		return nil, nil
+	}
+	return parseParams(strings.Split(query, "&"))
 }
 
 func printRawJSON(a *app, raw []byte) error {

@@ -151,7 +151,7 @@ func (a *app) rootCommand() *cobra.Command {
 	root.SetVersionTemplate("lmw {{.Version}}\n")
 
 	root.AddCommand(a.authCommand(), a.meCommand(), a.feedCommand(), a.postCommand(),
-		a.apiCommand(), a.harCommand(), a.identityCommand(), a.limitsCommand())
+		a.apiCommand(), a.harCommand(), a.identityCommand(), a.limitsCommand(), a.mcpCommand())
 	return root
 }
 

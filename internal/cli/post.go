@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"context"
+	"fmt"
 	"os"
 	"strings"
 
@@ -8,6 +10,7 @@ import (
 
 	"github.com/MarcZX100/LinkedinMechaWarrior/internal/api"
 	"github.com/MarcZX100/LinkedinMechaWarrior/internal/errs"
+	"github.com/MarcZX100/LinkedinMechaWarrior/internal/mcp"
 	"github.com/MarcZX100/LinkedinMechaWarrior/internal/output"
 	"github.com/MarcZX100/LinkedinMechaWarrior/internal/postgen"
 	"github.com/MarcZX100/LinkedinMechaWarrior/internal/voyager"
@@ -163,4 +166,41 @@ func (a *app) postPublishCommand() *cobra.Command {
 	source.register(cmd)
 	cmd.Flags().BoolVar(&connectionsOnly, "connections-only", false, "only your connections can see the post")
 	return cmd
+}
+
+func (a *app) mcpPostTools() []mcp.Tool {
+	// checkedPost normalizes and validates the text the assistant wants to publish.
+	checkedPost := func(args mcp.Args) (string, api.Visibility, string, error) {
+		text := postgen.Normalize(args.String("text"))
+		if err := postgen.Validate(text, a.cfg.MaxPostChars); err != nil {
+			return "", 0, "", err
+		}
+		if args.String("visibility") == "connections" {
+			return text, api.ConnectionsOnly, "your connections only", nil
+		}
+		return text, api.Anyone, "anyone", nil
+	}
+	return []mcp.Tool{
+		{
+			Name:  "publish_post",
+			Title: "Publish a post",
+			Description: "Publish a text post on the person's LinkedIn. Show the person the exact text and get their agreement first. " +
+				"Text with unfilled [placeholders] is refused.",
+			Params: []mcp.Param{
+				{Name: "text", Type: "string", Description: fmt.Sprintf("the post, at most %d characters", a.cfg.MaxPostChars), Required: true},
+				{Name: "visibility", Type: "string", Description: "who can see it", Enum: []string{"anyone", "connections"}, Default: "anyone"},
+			},
+			Confirm: func(args mcp.Args) (string, error) {
+				text, _, audience, err := checkedPost(args)
+				return fmt.Sprintf("Publish this post on LinkedIn, visible to %s?\n\n%s", audience, text), err
+			},
+			Run: func(ctx context.Context, args mcp.Args) (any, error) {
+				text, visibility, _, err := checkedPost(args)
+				if err != nil {
+					return nil, err
+				}
+				return fetch(a, func(c *voyager.Client) (api.PublishedPost, error) { return api.Publish(ctx, c, text, visibility) })
+			},
+		},
+	}
 }

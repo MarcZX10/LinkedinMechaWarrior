@@ -1,12 +1,15 @@
 package cli
 
 import (
+	"context"
+	"encoding/json"
 	"strings"
 
 	"github.com/spf13/cobra"
 
 	"github.com/MarcZX100/LinkedinMechaWarrior/internal/api"
 	"github.com/MarcZX100/LinkedinMechaWarrior/internal/errs"
+	"github.com/MarcZX100/LinkedinMechaWarrior/internal/mcp"
 	"github.com/MarcZX100/LinkedinMechaWarrior/internal/output"
 	"github.com/MarcZX100/LinkedinMechaWarrior/internal/voyager"
 )
@@ -74,4 +77,60 @@ func (a *app) feedCommand() *cobra.Command {
 	cmd.Flags().IntVarP(&limit, "limit", "n", 10, "number of posts (1-50)")
 	cmd.Flags().BoolVar(&full, "full", false, "show complete post texts")
 	return cmd
+}
+
+func (a *app) mcpAccountTools() []mcp.Tool {
+	return []mcp.Tool{
+		{
+			Name:        "get_my_profile",
+			Title:       "My profile",
+			Description: "The person's own LinkedIn profile: name, headline, public id and address. Also a cheap way to check that the session works.",
+			ReadOnly:    true,
+			Run: func(ctx context.Context, _ mcp.Args) (any, error) {
+				return fetch(a, func(c *voyager.Client) (api.Profile, error) { return api.Me(ctx, c) })
+			},
+		},
+		{
+			Name:        "get_feed",
+			Title:       "Home feed",
+			Description: "Recent posts from the person's home feed, newest first, with author, text, counts and address.",
+			ReadOnly:    true,
+			Params:      []mcp.Param{limitParam("posts", 10, api.MaxFeedPosts)},
+			Run: func(ctx context.Context, args mcp.Args) (any, error) {
+				posts, err := fetch(a, func(c *voyager.Client) ([]api.FeedPost, error) { return api.Feed(ctx, c, args.Int("limit")) })
+				return listOf("posts", posts, err)
+			},
+		},
+		{
+			Name:        "get_request_budget",
+			Title:       "Request budget",
+			Description: "How many LinkedIn requests were sent in the last hour and day, the budgets, and any cooldown. Sends nothing to LinkedIn.",
+			ReadOnly:    true,
+			Run: func(context.Context, mcp.Args) (any, error) {
+				return a.newPacer(a.cfg).Usage(), nil
+			},
+		},
+		{
+			Name:  "linkedin_api_get",
+			Title: "Raw API GET",
+			Description: "GET a path of LinkedIn's internal Voyager API (e.g. /me) and return the raw JSON. Only for data no other tool provides; " +
+				"responses are large, so prefer the dedicated tools.",
+			ReadOnly: true,
+			Params: []mcp.Param{
+				{Name: "path", Type: "string", Description: "API path such as /me or /identity/profiles/NAME/profileContactInfo", Required: true},
+				{Name: "query", Type: "string", Description: "query string without the leading ?, e.g. count=10&q=chronFeed"},
+			},
+			Run: func(ctx context.Context, args mcp.Args) (any, error) {
+				query, err := parseQuery(args.String("query"))
+				if err != nil {
+					return nil, err
+				}
+				raw, err := fetch(a, func(c *voyager.Client) ([]byte, error) { return c.Get(ctx, args.String("path"), query) })
+				if err != nil {
+					return nil, err
+				}
+				return json.RawMessage(raw), nil
+			},
+		},
+	}
 }

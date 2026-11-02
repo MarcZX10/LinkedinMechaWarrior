@@ -30,6 +30,7 @@ Start with `lmw auth import`.
 * [lmw har](lmw_har.md)	 - Inspect HAR files recorded in your browser
 * [lmw identity](lmw_identity.md)	 - Show or change which browser lmw presents itself as
 * [lmw limits](lmw_limits.md)	 - Show request budgets and cooldowns
+* [lmw mcp](lmw_mcp.md)	 - Let an AI assistant use lmw through MCP (stdio)
 * [lmw me](lmw_me.md)	 - Show your profile
 * [lmw post](lmw_post.md)	 - Draft, check and publish posts
 

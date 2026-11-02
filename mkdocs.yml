@@ -115,6 +115,7 @@ nav:
           - reference/lmw_identity_import.md
           - reference/lmw_identity_reset.md
           - reference/lmw_limits.md
+          - reference/lmw_mcp.md
 
 extra:
   social:
