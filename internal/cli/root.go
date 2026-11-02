@@ -166,7 +166,7 @@ func (a *app) rootCommand() *cobra.Command {
 	root.SetVersionTemplate("lmw {{.Version}}\n")
 
 	root.AddCommand(a.authCommand(), a.meCommand(), a.feedCommand(), a.profileCommand(), a.postCommand(),
-		a.messagesCommand(), a.notificationsCommand(), a.unreadCommand(), a.watchCommand(), a.notifyCommand(), a.daemonCommand(), a.invitationsCommand(), a.connectCommand(), a.connectionsCommand(),
+		a.messagesCommand(), a.notificationsCommand(), a.unreadCommand(), a.watchCommand(), a.notifyCommand(), a.daemonCommand(), a.gamesCommand(), a.invitationsCommand(), a.connectCommand(), a.connectionsCommand(),
 		a.searchCommand(), a.companyCommand(), a.jobsCommand(), a.savedCommand(),
 		a.apiCommand(), a.harCommand(), a.identityCommand(), a.limitsCommand(), a.doctorCommand(), a.mcpCommand())
 	return root

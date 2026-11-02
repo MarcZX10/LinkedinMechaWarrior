@@ -32,6 +32,13 @@
   counts unread conversations by folder, `--watch` counts again every so
   often, and `--on-change` runs a command when a count goes up.
 
+### Puzzles
+
+- `games queens` and `games sudoku`: type in the day's Queens or Mini Sudoku
+  board and get the solution, the next step with its reason (`--hint`), or
+  every step (`--steps`), reasoned the way a person would. Offline: lmw
+  never plays on LinkedIn. MCP: `solve_queens`, `solve_sudoku`.
+
 ### Fixed
 
 - `post comments` and `post reactions` answered nothing for reposts: they

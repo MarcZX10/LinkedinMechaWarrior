@@ -32,6 +32,7 @@ Start with `lmw auth import`.
 * [lmw daemon](lmw_daemon.md)	 - Keep checking your watches and send notifications (Ctrl-C stops)
 * [lmw doctor](lmw_doctor.md)	 - Check that lmw is ready to fly
 * [lmw feed](lmw_feed.md)	 - Show your home feed
+* [lmw games](lmw_games.md)	 - Solve LinkedIn's daily puzzles, or get a hint (offline)
 * [lmw har](lmw_har.md)	 - Inspect HAR files recorded in your browser
 * [lmw identity](lmw_identity.md)	 - Show or change which browser lmw presents itself as
 * [lmw invitations](lmw_invitations.md)	 - List and answer connection requests

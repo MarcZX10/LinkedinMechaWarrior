@@ -99,6 +99,7 @@ Even then, nothing is posted or sent behind your back:
 | `get_request_budget` | Requests used and any cooldown (sends nothing) | |
 | `linkedin_api_get` | Raw GET to the internal API, for anything else | |
 | `create_watch`, `list_watches`, `delete_watch`, `check_watches` | Keep an eye on something and tell you later: someone's next post, new jobs, messages ([watches](watches.md)) | |
+| `solve_queens`, `solve_sudoku` | Hints and solutions for LinkedIn's Queens and Mini Sudoku, offline ([puzzles](games.md)) | |
 | `list_notification_channels`, `send_notification` | Where notifications go, and a notification of the assistant's | |
 | `publish_post` | Publish a post, with images, a video, a PDF, a poll or a link card, now or scheduled | ✔ |
 | `edit_post` | Replace the text of one of your posts | ✔ |
