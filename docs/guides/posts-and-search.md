@@ -98,6 +98,22 @@ Go engineer   id 4012345678
 - `jobs show` prints the description (`--full` for all of it) and the link to
   apply. Applying is done on the website.
 
+Your job tracker (the jobs you saved or applied to) has one list per stage:
+
+```bash
+lmw jobs tracked                    # saved jobs
+lmw jobs tracked --stage applied    # also: in-progress, interview, archived
+```
+
+## Saved posts
+
+```bash
+lmw saved -n 20
+```
+
+The posts you saved with *Save* on the website, most recently saved first,
+with their links.
+
 ## When a command stops working
 
 Comments, reactions, messages, search and members' posts are read through

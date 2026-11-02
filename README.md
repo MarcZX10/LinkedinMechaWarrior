@@ -98,11 +98,11 @@ Ten minutes from zero to your feed in the terminal:
 
 | Bay | Commands | What it does |
 |---|---|---|
-| 📡 **Intel** | `me` · `feed` · `profile show` · `profile posts` · `profile contact` · `notifications` | Your profile and feed, anyone's profile and posts, contact info, alerts |
+| 📡 **Intel** | `me` · `feed` · `profile show` · `profile posts` · `profile contact` · `notifications` · `saved` | Your profile and feed, anyone's profile and posts, contact info, alerts, saved posts |
 | 💬 **Comms** | `messages` · `messages show` · `messages send` · `messages read` | Inbox and folders, conversations, replies and new chats |
 | 🤝 **Diplomacy** | `invitations` · `invitations accept/ignore/sent/withdraw` · `connect` · `connections` · `connections remove` | Connection requests both ways, your network |
 | 🎯 **Engagement** | `post draft/preview/publish` · `post edit` · `post show` · `post comments` · `post reactions` · `post react/unreact` · `post comment` · `post reply` · `post delete` | Publish with images, video, PDFs, polls or link cards, now or scheduled; react to and answer posts and comments |
-| 🔭 **Recon** | `search people/companies/schools/groups` · `company show` · `jobs search` · `jobs show` | Find people and pages, read job postings |
+| 🔭 **Recon** | `search people/companies/schools/groups` · `company show` · `jobs search` · `jobs show` · `jobs tracked` | Find people and pages, read job postings, follow your applications |
 | 🛰️ **Signals** | `profile follow/unfollow` · `company follow/unfollow` | Tune what reaches your feed |
 | 🤖 **Co-pilot** | `mcp` · `mcp --allow-write` | Hand the controls to an AI assistant, under your watch |
 | 🔧 **Workshop** | `doctor` · `api get` · `har inspect` · `har learn` · `identity` · `limits` · `auth` | Preflight checks, explore the API, learn LinkedIn's latest changes, check budgets |
@@ -146,9 +146,9 @@ flowchart LR
     armor ==> li[(LinkedIn)]
 ```
 
-- **33 tools**: feed, profiles, posts with images and polls, comments and
+- **35 tools**: feed, profiles, posts with images and polls, comments and
   replies, reactions, messages, notifications, invitations, connections,
-  search, companies, jobs, budgets.
+  search, companies, jobs and your job tracker, saved posts, budgets.
 - **Read-only by default.** Tools that change something only exist with
   `--allow-write`, and your client asks you before each call.
 - **You see the payload.** Clients with MCP elicitation get the exact text to

@@ -92,7 +92,8 @@ Even then, nothing is posted or sent behind your back:
 | `list_invitations`, `list_connections` | Connection requests and your connections | |
 | `search` | People, companies, schools or groups | |
 | `get_company` | A company or school page | |
-| `search_jobs`, `get_job` | Job search and postings | |
+| `search_jobs`, `get_job`, `get_tracked_jobs` | Job search, postings and your job tracker | |
+| `get_saved_posts` | The posts you saved | |
 | `get_request_budget` | Requests used and any cooldown (sends nothing) | |
 | `linkedin_api_get` | Raw GET to the internal API, for anything else | |
 | `publish_post` | Publish a post, with images, a video, a PDF, a poll or a link card, now or scheduled | ✔ |
