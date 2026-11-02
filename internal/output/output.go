@@ -299,6 +299,38 @@ func Unread(u api.Unread) string {
 	return strings.Join(lines, "\n")
 }
 
+// ProfileViews formats who viewed your profile.
+func ProfileViews(v api.ProfileViews) string {
+	var lines []string
+	if v.Views != nil {
+		line := fmt.Sprintf("%d profile views", *v.Views)
+		if v.Change != nil {
+			line += fmt.Sprintf(" (%+.0f%%)", *v.Change)
+		}
+		lines = append(lines, line)
+	}
+	for _, viewer := range v.Viewers {
+		head := viewer.Name
+		if viewer.Degree != "" {
+			head += " · " + viewer.Degree
+		}
+		lines = append(lines, "", head)
+		if viewer.Headline != "" {
+			lines = append(lines, "  "+viewer.Headline)
+		}
+		if details := joinNonEmpty("   ", viewer.Viewed, viewer.URL); details != "" {
+			lines = append(lines, "  "+details)
+		}
+	}
+	if v.Private > 0 {
+		lines = append(lines, "", fmt.Sprintf("%d more in private mode or not named", v.Private))
+	}
+	if len(lines) == 0 {
+		return "LinkedIn names no viewers yet."
+	}
+	return strings.TrimPrefix(strings.Join(lines, "\n"), "\n")
+}
+
 // Watch formats one watch for the list: id, what, how often and its state.
 func Watch(w watch.Watch) string {
 	line := fmt.Sprintf("%s  %s, every %s", w.ID, w.Describe(), w.Every())

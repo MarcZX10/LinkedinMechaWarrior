@@ -722,7 +722,7 @@ func TestMCPOffersEveryFeature(t *testing.T) {
 	}
 	for _, want := range []string{
 		"get_my_profile", "get_feed", "get_profile", "get_profile_posts", "get_contact_info", "get_post", "get_post_comments",
-		"get_post_reactions", "list_conversations", "get_conversation", "get_notifications", "get_unread_counts", "list_invitations", "list_connections",
+		"get_post_reactions", "list_conversations", "get_conversation", "get_notifications", "get_unread_counts", "get_profile_views", "list_invitations", "list_connections",
 		"search", "get_company", "search_jobs", "get_job", "get_saved_posts", "get_tracked_jobs", "get_request_budget", "linkedin_api_get",
 		"publish_post", "edit_post", "comment_on_post", "reply_to_comment", "react_to_post", "remove_reaction", "delete_post", "send_message", "mark_conversation_read",
 		"answer_invitation", "withdraw_invitation", "send_connection_request", "remove_connection", "set_following",
@@ -883,5 +883,20 @@ func TestUnreadWatchRunsTheCommandWhenSomethingArrives(t *testing.T) {
 	h.ctx = nil
 	if code, _, errOut := h.run("", "unread", "--on-change", "notify me"); code == 0 || !strings.Contains(errOut, "--on-change needs --watch") {
 		t.Errorf("--on-change without --watch: exit %d, %s", code, errOut)
+	}
+}
+
+func TestProfileViews(t *testing.T) {
+	h := newHarness(t)
+	h.importPasted()
+	h.linkedin.replies["/identity/wvmpCards"] = reply{status: 200, body: `{"data":{"elements":[{"value":{"com.linkedin.voyager.identity.me.wvmpOverview.WvmpViewersCard":{` +
+		`"insightCards":[{"value":{"com.linkedin.voyager.identity.me.wvmpOverview.WvmpSummaryInsightCard":{"numViews":12,"cards":[` +
+		`{"value":{"com.linkedin.voyager.identity.me.WvmpProfileViewCard":{"viewedAt":1700000000000,"viewer":{"com.linkedin.voyager.identity.me.FullProfileViewer":{` +
+		`"profile":{"miniProfile":{"firstName":"Grace","lastName":"Hopper","occupation":"Admiral","publicIdentifier":"grace-hopper"},"distance":{"value":"DISTANCE_2"}}}}}}}]}}}]}}}]},"included":[]}`}
+	out := h.mustRun("", "profile", "views")
+	for _, want := range []string{"12 profile views", "Grace Hopper · 2nd", "  Admiral", "https://www.linkedin.com/in/grace-hopper/"} {
+		if !strings.Contains(out, want) {
+			t.Errorf("missing %q in\n%s", want, out)
+		}
 	}
 }

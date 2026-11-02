@@ -19,9 +19,31 @@ func (a *app) profileCommand() *cobra.Command {
 			"PROFILE is the address of the profile (linkedin.com/in/NAME), NAME itself,\n" +
 			"or a member URN.",
 	}
-	cmd.AddCommand(a.profileShowCommand(), a.profileContactCommand(), a.profilePostsCommand(),
+	cmd.AddCommand(a.profileShowCommand(), a.profileContactCommand(), a.profilePostsCommand(), a.profileViewsCommand(),
 		a.followCommand("profile", true), a.followCommand("profile", false))
 	return cmd
+}
+
+func (a *app) profileViewsCommand() *cobra.Command {
+	return &cobra.Command{
+		Use:   "views",
+		Short: "Show who viewed your profile lately",
+		Long: "Show LinkedIn's overview of who viewed your profile: its count of views and the\n" +
+			"viewers it names, latest first (one request). Free accounts see only a few names;\n" +
+			"people browsing in private mode are counted, not named.",
+		Args: exactArgs(0, "no arguments"),
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			views, err := fetch(a, func(c *voyager.Client) (api.ProfileViews, error) { return api.GetProfileViews(cmd.Context(), c) })
+			if err != nil {
+				return err
+			}
+			if a.jsonOut {
+				return output.JSON(a.stdout, views)
+			}
+			a.printf("%s\n", output.ProfileViews(views))
+			return nil
+		},
+	}
 }
 
 func (a *app) profileShowCommand() *cobra.Command {
@@ -78,6 +100,15 @@ var profileParam = mcp.Param{Name: "profile", Type: "string", Required: true,
 
 func (a *app) mcpProfileTools() []mcp.Tool {
 	return []mcp.Tool{
+		{
+			Name:        "get_profile_views",
+			Title:       "Who viewed my profile",
+			Description: "LinkedIn's overview of who viewed the person's profile lately: the count of views and the viewers it names (a few on free accounts), latest first.",
+			ReadOnly:    true,
+			Run: func(ctx context.Context, _ mcp.Args) (any, error) {
+				return fetch(a, func(c *voyager.Client) (api.ProfileViews, error) { return api.GetProfileViews(ctx, c) })
+			},
+		},
 		{
 			Name:        "get_profile",
 			Title:       "Member profile",

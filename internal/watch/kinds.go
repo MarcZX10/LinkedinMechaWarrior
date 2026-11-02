@@ -136,6 +136,21 @@ var Kinds = []Kind{
 		},
 	},
 	{
+		Name: "views", About: "new people viewing your profile", Cost: 1,
+		Check: func(ctx context.Context, c api.Client, _ *Watch) ([]Item, error) {
+			views, err := api.GetProfileViews(ctx, c)
+			if err != nil {
+				return nil, err
+			}
+			var items []Item
+			for _, v := range views.Viewers {
+				items = append(items, Item{Key: firstNonEmpty(v.URL, v.Name) + "@" + v.Viewed, Title: v.Name + " viewed your profile",
+					Text: v.Headline, URL: v.URL})
+			}
+			return items, nil
+		},
+	},
+	{
 		Name: "invitations", About: "new connection requests", Cost: 1,
 		Check: func(ctx context.Context, c api.Client, _ *Watch) ([]Item, error) {
 			invitations, err := api.Invitations(ctx, c, 10)

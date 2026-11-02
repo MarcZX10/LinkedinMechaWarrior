@@ -17,6 +17,28 @@ https://www.linkedin.com/in/ada-lovelace/
 
 One request. A good first command after importing a session.
 
+## Who viewed your profile
+
+```bash
+lmw profile views
+```
+
+```text
+120 profile views (-75%)
+
+Grace Hopper · 2nd
+  Admiral
+  2026-11-01 18:20   https://www.linkedin.com/in/grace-hopper/
+
+1 more in private mode or not named
+```
+
+One request, the overview of LinkedIn's "Who viewed your profile" page: its
+count of views, how it changed, and the viewers it names, latest first. Free
+accounts see only the last few names; people browsing in private mode are
+counted, not named. To hear about new viewers as they come, add a
+[watch](watches.md): `lmw watch add views`.
+
 ## Your feed
 
 ```bash

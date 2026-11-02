@@ -131,6 +131,7 @@ nav:
           - reference/lmw_profile_contact.md
           - reference/lmw_profile_follow.md
           - reference/lmw_profile_posts.md
+          - reference/lmw_profile_views.md
           - reference/lmw_profile_show.md
           - reference/lmw_profile_unfollow.md
           - reference/lmw_post.md

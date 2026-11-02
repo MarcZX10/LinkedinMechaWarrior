@@ -84,6 +84,7 @@ Even then, nothing is posted or sent behind your back:
 | Tool | What it does | Changes LinkedIn |
 |---|---|:---:|
 | `get_my_profile` | Your profile; also checks the session | |
+| `get_profile_views` | Who viewed your profile lately | |
 | `get_feed` | Your home feed | |
 | `get_profile`, `get_profile_posts`, `get_contact_info` | A member's profile, posts and contact info | |
 | `get_post`, `get_post_comments`, `get_post_reactions` | A post, its comments and who reacted | |

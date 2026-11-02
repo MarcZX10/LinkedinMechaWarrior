@@ -17,6 +17,7 @@ Kinds of watches:
   profile        changes to a member's headline or current job (TARGET: a profile (linkedin.com/in/NAME))
   comments       new comments on a post (TARGET: a post (its link or URN))
   jobs           new job postings for a search (TARGET: the search keywords)
+  views          new people viewing your profile
   invitations    new connection requests
   messages       new messages in your inbox
   notifications  new notifications

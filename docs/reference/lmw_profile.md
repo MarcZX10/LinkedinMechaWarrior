@@ -32,4 +32,5 @@ or a member URN.
 * [lmw profile posts](lmw_profile_posts.md)	 - Show a member's recent posts
 * [lmw profile show](lmw_profile_show.md)	 - Show a profile: headline, about, experience, education, skills
 * [lmw profile unfollow](lmw_profile_unfollow.md)	 - Unfollow a member (asks for confirmation)
+* [lmw profile views](lmw_profile_views.md)	 - Show who viewed your profile lately
 

@@ -90,6 +90,7 @@ lmw feed -n 20                            # what's on the radar
 lmw messages                              # incoming transmissions
 lmw unread                                # blips on the radar: what's unread
 lmw notifications                         # alerts
+lmw profile views                         # who has you on their scope
 lmw watch add posts linkedin.com/in/NAME --once   # ping me on their next post
 lmw post publish --text-file post.txt     # fire, after you confirm
 ```
@@ -149,7 +150,7 @@ flowchart LR
     armor ==> li[(LinkedIn)]
 ```
 
-- **42 tools**: unread counts, feed, profiles, posts with images and polls, comments and
+- **43 tools**: unread counts, who viewed your profile, feed, profiles, posts with images and polls, comments and
   replies, reactions, messages, notifications, invitations, connections,
   search, companies, jobs and your job tracker, saved posts, budgets, and
   watches that notify you later.

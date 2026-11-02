@@ -65,6 +65,7 @@ lmw watch add comments https://www.linkedin.com/feed/update/urn:li:activity:7123
 | `profile` | Changes to a member's headline or current job | A profile | 1 |
 | `comments` | New comments on a post | A post | 1, or 2 for a repost |
 | `jobs` | New job postings for a search (`--location`, `--workplace`, `--posted`) | Keywords | 1 |
+| `views` | New people viewing your profile | | 1 |
 | `invitations` | New connection requests | | 1 |
 | `messages` | New messages in your inbox | | 2 |
 | `notifications` | New notifications | | 1 |
