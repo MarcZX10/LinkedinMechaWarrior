@@ -95,8 +95,10 @@ Even then, nothing is posted or sent behind your back:
 | `search_jobs`, `get_job` | Job search and postings | |
 | `get_request_budget` | Requests used and any cooldown (sends nothing) | |
 | `linkedin_api_get` | Raw GET to the internal API, for anything else | |
-| `publish_post` | Publish a text post | ✔ |
-| `comment_on_post`, `react_to_post`, `remove_reaction` | Comment and react | ✔ |
+| `publish_post` | Publish a post, with images, a video, a PDF, a poll or a link card, now or scheduled | ✔ |
+| `edit_post` | Replace the text of one of your posts | ✔ |
+| `comment_on_post`, `reply_to_comment` | Comment on a post, reply to a comment | ✔ |
+| `react_to_post`, `remove_reaction` | React to a post or a comment, or take it back | ✔ |
 | `delete_post` | Delete one of your posts | ✔ |
 | `send_message`, `mark_conversation_read` | Send a message, mark a conversation as read | ✔ |
 | `answer_invitation`, `withdraw_invitation` | Accept or ignore an invitation, withdraw yours | ✔ |

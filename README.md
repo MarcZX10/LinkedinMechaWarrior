@@ -83,6 +83,7 @@ Session from HAR file saved in the system keyring.
 **3. Fly.**
 
 ```bash
+lmw doctor --online                       # preflight checks
 lmw me                                    # who's in the cockpit
 lmw feed -n 20                            # what's on the radar
 lmw messages                              # incoming transmissions
@@ -100,11 +101,11 @@ Ten minutes from zero to your feed in the terminal:
 | 📡 **Intel** | `me` · `feed` · `profile show` · `profile posts` · `profile contact` · `notifications` | Your profile and feed, anyone's profile and posts, contact info, alerts |
 | 💬 **Comms** | `messages` · `messages show` · `messages send` · `messages read` | Inbox and folders, conversations, replies and new chats |
 | 🤝 **Diplomacy** | `invitations` · `invitations accept/ignore/sent/withdraw` · `connect` · `connections` · `connections remove` | Connection requests both ways, your network |
-| 🎯 **Engagement** | `post draft/preview/publish` · `post show` · `post comments` · `post reactions` · `post react/unreact` · `post comment` · `post delete` | Write and publish, read threads, react and comment |
+| 🎯 **Engagement** | `post draft/preview/publish` · `post edit` · `post show` · `post comments` · `post reactions` · `post react/unreact` · `post comment` · `post reply` · `post delete` | Publish with images, video, PDFs, polls or link cards, now or scheduled; react to and answer posts and comments |
 | 🔭 **Recon** | `search people/companies/schools/groups` · `company show` · `jobs search` · `jobs show` | Find people and pages, read job postings |
 | 🛰️ **Signals** | `profile follow/unfollow` · `company follow/unfollow` | Tune what reaches your feed |
 | 🤖 **Co-pilot** | `mcp` · `mcp --allow-write` | Hand the controls to an AI assistant, under your watch |
-| 🔧 **Workshop** | `api get` · `har inspect` · `har learn` · `identity` · `limits` · `auth` | Explore the API, learn LinkedIn's latest changes, check budgets |
+| 🔧 **Workshop** | `doctor` · `api get` · `har inspect` · `har learn` · `identity` · `limits` · `auth` | Preflight checks, explore the API, learn LinkedIn's latest changes, check budgets |
 
 Every command that shows data speaks `--json`, so the output flows into `jq`,
 scripts and dashboards. Profiles, posts, companies and jobs can be given as the
@@ -115,6 +116,7 @@ lmw profile show https://www.linkedin.com/in/ada-lovelace/
 lmw search people "rust developer" --network 2nd -n 20
 lmw jobs search go developer --location Barcelona --workplace remote,hybrid --posted week
 lmw post react https://www.linkedin.com/feed/update/urn:li:activity:7123456789012345678/ --type celebrate
+lmw post publish --text-file launch.txt --image mech.png --alt "LMW-01 on the launch pad" --at "2026-11-05 09:30"
 lmw messages send --to ada-lovelace --text "Ready for launch?"
 lmw invitations --json | jq -r '.[] | "\(.id) \(.name)"'
 ```
@@ -144,8 +146,9 @@ flowchart LR
     armor ==> li[(LinkedIn)]
 ```
 
-- **31 tools**: feed, profiles, posts, comments, reactions, messages,
-  notifications, invitations, connections, search, companies, jobs, budgets.
+- **33 tools**: feed, profiles, posts with images and polls, comments and
+  replies, reactions, messages, notifications, invitations, connections,
+  search, companies, jobs, budgets.
 - **Read-only by default.** Tools that change something only exist with
   `--allow-write`, and your client asks you before each call.
 - **You see the payload.** Clients with MCP elicitation get the exact text to
@@ -163,7 +166,7 @@ Full briefing: [Use lmw from an AI assistant](docs/guides/ai-assistants.md).
 | **No login, ever** | Reuses the session of the browser you already use, 2FA included, and keeps it in the system keyring. [More](docs/guides/import-session.md) |
 | **Human pacing** | Random 2-6 s pauses, longer ones now and then, across separate runs. Hourly and daily budgets. [More](docs/guides/stay-safe.md) |
 | **Ejection seat** | Rate limit → 1 h cooldown. Security check → 6 h cooldown. Expired session → stop. Never retries on its own. |
-| **Trigger safety** | Every post, comment, reaction, message, invitation and follow shows what it will do and waits for you to type a word. |
+| **Trigger safety** | Every post, comment, reaction, message, invitation and follow shows what it will do and waits for you to type a word. Files are uploaded only after that. |
 | **No bulk weapons** | No mass messaging, mass inviting or scraping. Volume is what gets accounts restricted. |
 | **Radio silence** | No telemetry. The only traffic is to LinkedIn, for the command you run. |
 

@@ -92,6 +92,13 @@ endpoint or a response format changed.
 | `the note is <n> characters long; LinkedIn allows 300` | `connect --note` is too long. | Shorten it. |
 | `unknown reaction "<x>"; use one of: ...` | `post react --type` with an unknown reaction. | Use `like`, `celebrate`, `support`, `love`, `insightful` or `funny`. |
 | `... The comment may have been posted anyway: check the post before trying again` | LinkedIn answered with a server error to a comment, which it sometimes does after creating it. | Look at the post before commenting again. |
+| `<file> is not a supported image; use .gif, .jpeg, ...` | The file's extension is not one LinkedIn takes for that kind of attachment. | Convert it, e.g. to PNG or JPEG for images, MP4 for video, PDF for documents. |
+| `a post carries one kind of extra: images, a video, a document, a poll or a link card` | Two kinds of attachments at once. | Keep one; images can be several. |
+| `a document needs a title (--title)` | `--document` without `--title`. | Add a title. |
+| `a poll needs 2 to 4 options, got <n>` / `poll option "<x>" must have 1 to 30 characters` | The poll breaks LinkedIn's rules. | Adjust the options. |
+| `LinkedIn refused the poll: <reason>; nothing was posted` | LinkedIn rejected the poll itself. | Fix what the reason says. |
+| `a post can be scheduled from 10 minutes to 3 months ahead` | `--at` is too soon, in the past, or too far. | Pick another time. |
+| `LinkedIn asked for a <type> upload of <file>, which lmw does not do; ...` | The file is so big that LinkedIn wants it uploaded in parts. | Use a smaller file. |
 | `use either --to PROFILE or --conversation ID` | `messages send` needs exactly one destination. | Pick one. |
 | `cannot search "<x>"; use people, companies, schools or groups` | Posts and other types can't be searched. | Use one of those; for jobs, `lmw jobs search`. |
 | `Cancelled; nothing was changed on LinkedIn.` (not an error) | You typed something other than the confirmation word. | Run it again and type the word shown. |

@@ -117,12 +117,53 @@ Published: https://www.linkedin.com/feed/update/urn:li:activity:7381234567890000
 - `--connections-only` limits the post to your connections.
 - For short posts you can use `--text "..."` instead of a file.
 
+### Images, video, documents, polls and links
+
+A post can carry one of these besides its text:
+
+```bash
+lmw post publish --text-file post.txt --image engine.png --alt "The engine, front view"
+lmw post publish --text-file post.txt --image one.jpg --image two.jpg --alt "First" --alt "Second"
+lmw post publish --text-file post.txt --video demo.mp4
+lmw post publish --text-file post.txt --document slides.pdf --title "Engines 101"
+lmw post publish --text "Settle this" --poll "Tabs or spaces?" --option Tabs --option Spaces --duration 3d
+lmw post publish --text "New article: https://example.com/engines" --link-preview
+```
+
+| Flag | Carries | Limits |
+|---|---|---|
+| `--image FILE` | Images (png, jpg, gif, webp), each with an optional `--alt` in the same order | Up to 20 |
+| `--video FILE` | A video (mp4, mov) | One |
+| `--document FILE --title TEXT` | A PDF, shown as a swipeable document | One, with a title |
+| `--poll QUESTION --option A --option B` | A poll; `--duration` is `1d`, `3d`, `1w` (default) or `2w` | 2 to 4 options of up to 30 characters |
+| `--link-preview` | The card of the first link in the text | |
+
+The confirmation lists what will be attached. Files are uploaded only after
+you type `publish`, and if an upload fails nothing is posted: an uploaded
+file nobody references stays invisible.
+
+### Schedule it
+
+```bash
+lmw post publish --text-file post.txt --at "2026-11-05 09:30"
+```
+
+The time is your local time, from 10 minutes to 3 months ahead. LinkedIn keeps
+the post and publishes it then, even with your computer off.
+
+### Fix a typo
+
+```bash
+lmw post edit urn:li:activity:7381234567890000099 --text-file fixed.txt
+```
+
+The new text replaces the old one entirely; images and other media stay.
+
 > [!WARNING]
-> Publishing has not been verified against a live LinkedIn account yet. If it
-> fails, nothing was published: LinkedIn rejects the whole request. To find
-> out what changed, publish one post from the website while recording a HAR,
-> then run `lmw har inspect linkedin.har --filter contentcreation`. See
-> [Extend lmw](extend-lmw.md).
+> If publishing fails, nothing was published: LinkedIn rejects the whole
+> request. To find out what changed, publish one post from the website while
+> recording a HAR, then run `lmw har inspect linkedin.har --filter contentcreation`.
+> See [Extend lmw](extend-lmw.md).
 
 ## Tips for posts that work
 

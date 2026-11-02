@@ -30,6 +30,15 @@ lmw post delete urn:li:activity:7123456789012345678
 ```
 
 - Reactions: `like`, `celebrate`, `support`, `love`, `insightful`, `funny`.
+- `post comments` shows each comment's URN, e.g.
+  `urn:li:fsd_comment:(7001,urn:li:activity:7123456789012345678)`. Give it to
+  `post reply` to answer it, or to `post react` and `post unreact`:
+
+```bash
+lmw post reply "urn:li:fsd_comment:(7001,urn:li:activity:7123456789012345678)" --text "Thanks!"
+lmw post react "urn:li:fsd_comment:(7001,urn:li:activity:7123456789012345678)" --type insightful
+```
+
 - Comments can be up to 1250 characters; `--text-file` reads one from a file.
 - Each command shows what it will do and waits until you type its name
   (`react`, `comment`, `delete`...).
